@@ -1,0 +1,10 @@
+#home-page{
+  display: flex;
+  justify-content: start;
+}
+#sider-container{
+  flex:1;
+}
+#main-container{
+  flex:3;
+}

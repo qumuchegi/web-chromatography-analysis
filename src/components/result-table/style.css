@@ -1,0 +1,12 @@
+#result-body{
+  display: flex;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+#result-body>div:first-child{
+  flex:4
+}
+#result-output{
+  flex:1;
+  padding: 10px;
+}

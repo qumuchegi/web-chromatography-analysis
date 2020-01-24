@@ -1,0 +1,70 @@
+#sider{
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 100vh;
+  min-height: 780px;
+}
+.mannul-step-button{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+#file-input-button{
+  padding: 2px;
+  border-radius: 3px;
+  display: flex;
+  justify-content: center;
+}
+#file-input-button:hover{
+  background-color: #eee;
+}
+#prj-description{
+  
+  background-color: rgb(121, 213, 241);
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-bottom: 20px;
+}
+@keyframes rotateLoading{
+  from{transform: rotate(0deg);}
+  to{transform: rotate(360deg);}
+}
+img#loading-icon{
+  display: block;
+  width:20px;
+  height: 20px;
+  animation: 1s linear 0s infinite rotateLoading;
+}
+#github-link{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  float: right;
+  background-color: white;
+  border: solid 2px rgb(121, 213, 241);
+  border-radius:10px ;
+  top:0;
+  right: 0;
+  width:160px;
+  padding: 4px;
+  padding-left: 10px;
+  text-align: right;
+}
+#prj-extensions-link{
+  display: flex;
+  justify-content: start;
+  flex-wrap: wrap;
+}
+#prj-extensions-link>div{
+  display: flex;
+  justify-content: space-between;
+  width: 90px;
+  margin: 5px;
+  border:solid 1px white;
+  padding: 2px;
+}
+#prj-extensions-link>div:hover{
+  cursor: pointer;
+  color:rgb(150, 94, 12);
+}
