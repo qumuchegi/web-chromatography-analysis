@@ -91,13 +91,13 @@ function Chart(props){
         {
             show: true,
             realtime: true,
-            start: 30,
-            end: 70,
+            start: 0,
+            end: 100,
         },
         {
           show: true,
-          start: 30,
-          end: 70,
+          start: 0,
+          end: 100,
       }
      ],
       series: yArr_stack.map(yArr=>

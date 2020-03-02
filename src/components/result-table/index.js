@@ -35,6 +35,9 @@ export default function(){
       let peaks = getState().dataReducer.data_peakIdent||[]
       console.log('表格：', peaks)
       let rows=[]
+      // 计算各组分含量，设置校正因子 f = 1，
+      let allPeaksArea = peaks.reduce((prevArea, peak)=>prevArea+Number(peak.state.areaPeak),0)
+     
       peaks.forEach((peak,i)=>{
         rows.push({
           name:i+1,
@@ -42,7 +45,8 @@ export default function(){
           startPoint_time: Number(peak.state.startPoint_time).toFixed(6),
           endPoint_time: Number(peak.state.endPoint_time).toFixed(6),
           heighestPoint_voltage: peak.state.heighestPoint_voltage.toFixed(3),
-          areaPeak: peak.state.areaPeak
+          areaPeak: peak.state.areaPeak,
+          ratio: `${(100*peak.state.areaPeak/allPeaksArea).toFixed(2)} %`
         })
       } )
       setRows(rows)
@@ -64,7 +68,7 @@ export default function(){
             <TableCell align="right">起点&nbsp;(min)</TableCell>
             <TableCell align="right">终点&nbsp;(min)</TableCell>
             <TableCell align="right">峰高&nbsp;(min)</TableCell>
-            <TableCell align="right">面积&nbsp;(min)</TableCell>
+            <TableCell align="right">面积&nbsp;(min*mv)</TableCell>
             <TableCell align="right">含量&nbsp;(%)</TableCell>
           </TableRow>
         </TableHead>
@@ -79,6 +83,7 @@ export default function(){
               <TableCell align="center">{row.endPoint_time}</TableCell>
               <TableCell align="center">{row.heighestPoint_voltage}</TableCell>
               <TableCell align="center">{row.areaPeak}</TableCell>
+              <TableCell align="center">{row.ratio}</TableCell>
             </TableRow>
           ))}
         </TableBody>

@@ -205,7 +205,7 @@ function peak_ident(xArr, yArr,  win_peakIdent){
           // 峰里的梯形面积
           let areaPeakLadder = Math.abs(endPoint_voltage-startPoint_voltage)*(endPoint_time-startPoint_time)/2
           console.log('计算峰面积：',{areaTotal, areaPeakLadder})
-          areaPeak = areaTotal - areaPeakLadder
+          areaPeak = (areaTotal - areaPeakLadder).toFixed(3)
           featurePoints.push(
             new FeaturePointOfPeak({
               startPoint_time, startPoint_voltage, // 起点时间和电压

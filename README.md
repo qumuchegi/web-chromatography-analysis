@@ -1,5 +1,5 @@
 ## 基于 React web 的色谱分析软件 (东南大学仪科学院毕设项目)
-算法流程分为：
+#### 算法流程分为：
 >滤波(移动平均滤波) 
 >-> 
 >峰识别(一阶导数法，宽松条件判断色谱波形和导数波形的单增单减) 
@@ -8,7 +8,24 @@
 >->
 >定性定量分析(峰面积、各组分含量)
 
+#### 使用：
+1. 原始数据格式化以便于交给算法分析：
+>进项目文件夹 “原始数据处理“，里面有 `bianyayou.txt` 和 `anjisuan.txt` 两个 txt 文件，分别存放者两种气相混合物的色谱数据，我们需要格式化者两个文件，方便读入算法处理分析，只需执行文件 `txt2json.js`，它会将 txt 转为 json, 如 `node txt2json anjisuan.txt`，这样就生成了 `anjisuan.json`，将色谱数据的时间和电压信号序列化
+
+2. 开启本地网页服务,在项目根目录执行 `npm start`，然后打开 `localhost:3000` ，在网页中打开刚才在 “原始数据处理“里生成的 `anjisuan.json`，将色谱绘制出来，依次点击 `滤波`、`峰检测即可`
+
+3. 提供了色谱绘制和分析结果整理成表单，可以下载表单供分析。
+
+#### 亮点
+
+1. 使用 node 流和 JS 的 worker 功能，无阻塞高效执行色谱算法。
+
+2. 没有使用数据库服务，纯靠文件的读写，避免服务端数据库I/O后还要传至前端，在读取流的同时进行数据运算。
+
 ## 项目移植
-[web 端](https://github.com/qumuchegi/web-chromatography-analysis)
-[PC 端]()
-[Android 端（React Native）]()
+
+- [web 端](https://github.com/qumuchegi/web-chromatography-analysis)
+
+- [PC 端]()
+
+- [Android 端（React Native）]()
