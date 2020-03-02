@@ -17,13 +17,14 @@ const init_peaks = [
       rightInflection_voltage: 24.873,
       endPoint_time: Number(34).toFixed(6),
       endPoint_voltage: 11.673,
+      areaPeak:19
     }
   }
 ]
 
 export const dataReducer = (
   state = {
-    data_origin: {},
+    data_origin: {times:init_times, values: init_values},
     data_filtered: [],
     data_peakIdent: [],
     result_computed: []

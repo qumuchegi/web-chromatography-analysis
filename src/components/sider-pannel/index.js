@@ -6,6 +6,7 @@ import Step from '@material-ui/core/Step'
 import StepLabel from '@material-ui/core/StepLabel'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
+import TextField from '@material-ui/core/TextField';
 
 import jsonFile from '../../assets/imgs/json.png'
 import avatarSrc from '../../assets/imgs/avatar.jpeg'
@@ -49,11 +50,11 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function getSteps() {
-  return ['导入色谱数据', '滤波', '峰识别','定性定量计算'];
+function getSteps(win_filter, win_peakIdent) {
+  return ['导入色谱数据', `滤波( 滤波窗口大小 ${win_filter})`, `峰识别和定性定量计算(一阶导峰检测窗口大小 ${win_peakIdent})`];
 }
 
-function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, buttonHadClicked}) {
+function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, buttonHadClicked, onWinFilterChange, onWinPeakIdentChange}) {
   switch (stepIndex) {
     case 0:
       return <div>
@@ -65,17 +66,19 @@ function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, but
       </div>
       ;
     case 1:
-      return <Button onClick={filter} color="secondary" variant="outlined" disabled={buttonHadClicked}>
-        滤波
-      </Button>;
+      return <>
+        <TextField onChange={onWinFilterChange} size='small' id="outlined-basic"  variant="outlined" label="设置滤波窗口大小" />
+        <Button onClick={filter} color="secondary" variant="outlined" disabled={buttonHadClicked}>
+          滤波
+        </Button>
+      </>;
     case 2:
-      return <Button onClick={peakIdent} color="primary" variant="outlined" disabled={buttonHadClicked}>
-        峰检测
-      </Button>;
-    case 3:
-      return <Button onClick={compute} color="secondary" variant="outlined" disabled={buttonHadClicked}>
-        定性定量计算
-      </Button>;
+      return <>
+        <TextField onChange={onWinPeakIdentChange} size='small' variant="outlined" label="设置检峰窗口大小" />
+        <Button onClick={peakIdent} color="primary" variant="outlined" disabled={buttonHadClicked}>
+          峰检测和定性定量计算
+        </Button>
+      </>;
     default:
       return '完成';
   }
@@ -84,9 +87,11 @@ function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, but
 export default function(){
   const classes = useStyles()
   const [activeStep, setActiveStep] = React.useState(0)
+  const [win_filter, setWin_filter] = React.useState(0)
+  const [win_peakIdent, setWin_peakIdent] = React.useState(0)
   const [buttonHadClicked, setButtonHadClicked] = React.useState(false)
 
-  const steps = getSteps()
+  const steps = getSteps(win_filter, win_peakIdent)
 
   const next = () => {
     setActiveStep(prevActiveStep => prevActiveStep + 1)
@@ -122,15 +127,15 @@ export default function(){
 
   const filter = (filterType) => {
     setButtonHadClicked(true)
-    let yData = getState().dataReducer.data_origin.values
+    let yArr = getState().dataReducer.data_origin.values
     //average_filter(yData)
     let filter_worker = new Worker(average_filter_worker_url)
-    console.log('滤波前原始数据：', yData)
-    filter_worker.postMessage(yData)
+    console.log('滤波前原始数据：', yArr)
+    filter_worker.postMessage([yArr, win_filter])
     filter_worker.onmessage=data=>{
       console.log('滤波线程返回：', data.data)
       dispatch( savefilteredData(data.data) )
-      yData=null
+      yArr=null
       setButtonHadClicked(false)
       next()
     }
@@ -141,7 +146,7 @@ export default function(){
     let peak_worker = new Worker(peak_ident_worker_url)
     let times = getState().dataReducer.data_origin.times
     let values_filtered = getState().dataReducer.data_filtered
-    peak_worker.postMessage([times, values_filtered])
+    peak_worker.postMessage([times, values_filtered, win_peakIdent])
     //console.log('peak_worker:',peak_worker)
     peak_worker.onmessage=(data)=>{
       console.log('子线程返回检测到的峰:',data.data)
@@ -153,6 +158,12 @@ export default function(){
     }
   }
 
+  const onWinFilterChange = (e) => {
+    setWin_filter(e.target.value)
+  }
+  const onWinPeakIdentChange = (e) => {
+    setWin_peakIdent(e.target.value)
+  }
   const compute = () => {
     next()
   }
@@ -176,7 +187,7 @@ export default function(){
           ) : (
             <div className="mannul-step-button">
               {buttonHadClicked?<img src={loadingIcon} alt='' id="loading-icon"/>:null}
-              {getStepContent(activeStep,{onFileChange, filter, peakIdent, compute, buttonHadClicked})}
+              {getStepContent(activeStep,{onFileChange, filter, peakIdent, compute, buttonHadClicked, onWinFilterChange, onWinPeakIdentChange})}
             </div>
           )}
         </div>

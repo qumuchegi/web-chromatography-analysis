@@ -41,8 +41,8 @@ export default function(){
           retention_time: Number(peak.state.retention_time).toFixed(6),
           startPoint_time: Number(peak.state.startPoint_time).toFixed(6),
           endPoint_time: Number(peak.state.endPoint_time).toFixed(6),
-          heighestPoint_voltage: peak.state.heighestPoint_voltage,
-          area: 10
+          heighestPoint_voltage: peak.state.heighestPoint_voltage.toFixed(3),
+          areaPeak: peak.state.areaPeak
         })
       } )
       setRows(rows)
@@ -78,6 +78,7 @@ export default function(){
               <TableCell align="center">{row.startPoint_time}</TableCell>
               <TableCell align="center">{row.endPoint_time}</TableCell>
               <TableCell align="center">{row.heighestPoint_voltage}</TableCell>
+              <TableCell align="center">{row.areaPeak}</TableCell>
             </TableRow>
           ))}
         </TableBody>
