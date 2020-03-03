@@ -1,4 +1,5 @@
 import React,{useState, useEffect} from 'react'
+import api from '../../api'
 import { makeStyles } from '@material-ui/core/styles';
 import Table from '@material-ui/core/Table';
 import TableBody from '@material-ui/core/TableBody';
@@ -13,8 +14,6 @@ import './style.css'
 
 import {store} from '../../redux/store'
 const {dispatch, getState, subscribe} = store
-
-
 
 const useStyles = makeStyles({
   table: {
@@ -56,6 +55,16 @@ export default function(){
     }
   }, [])
 
+  async function downloadXlsx(){
+    let res = await api.download_xlsx('/txtfile/download-xlsx',{rows})
+    console.log(res)
+    let href = URL.createObjectURL(res)
+    var a = document.createElement("a")
+    a.href = href
+    a.download = 'result.xlsx'
+    a.click()
+  }
+
   if(rows.length>0)
   return(
     <div id='result-body'>
@@ -94,9 +103,12 @@ export default function(){
             color="primary"
             size="small"
             className={classes.button}
-            startIcon={<img src={saveIcon} style={{width:"13px"}} alt=''/>}
+            onClick={downloadXlsx}
+            startIcon={<img src={saveIcon} 
+            style={{width:"13px"}} 
+            alt=''/>}
           >
-            保存分析结果
+            保存分析结果(xlsx)
       </Button>
     </div>
   </div>

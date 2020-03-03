@@ -1,7 +1,7 @@
 import React from 'react'
+import api from '../../api'
 import { makeStyles } from '@material-ui/core/styles'
 import Stepper from '@material-ui/core/Stepper'
-import Avatar from '@material-ui/core/Avatar';
 import Step from '@material-ui/core/Step'
 import StepLabel from '@material-ui/core/StepLabel'
 import Button from '@material-ui/core/Button'
@@ -51,7 +51,7 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function getSteps(win_filter, win_peakIdent) {
-  return ['导入色谱数据', `滤波( 滤波窗口大小 ${win_filter})`, `峰识别和定性定量计算(一阶导峰检测窗口大小 ${win_peakIdent})`];
+  return ['导入色谱数据(txt 文件格式)', `滤波( 滤波窗口大小 ${win_filter})`, `峰识别和定性定量计算(一阶导峰检测窗口大小 ${win_peakIdent})`];
 }
 
 function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, buttonHadClicked, onWinFilterChange, onWinPeakIdentChange}) {
@@ -60,7 +60,7 @@ function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, but
       return <div>
         <label htmlFor='file' id="file-input-button">
           <img src={jsonFile} alt='上传' style={{width: '20px', display:'block'}}></img>
-          导入数据
+          导入数据（txt）
         </label>
         <input type='file' id='file' style={{display:'none'}} onChange={onFileChange}/>
       </div>
@@ -106,23 +106,19 @@ export default function(){
     setActiveStep(0)
   }
 
-  const onFileChange = (e) => {
+  const onFileChange = async(e) => {
     e.persist()
     let file = e.target.files[0]
     if(!file) return
-    let fileReader = new FileReader()
-    let prjTitle = file.name
-    console.log('file', file)
-    fileReader.readAsText(file)
-    fileReader.onload = function(){
-      let JSONData = JSON.parse( this.result) 
-      let { times,values } = JSONData
-      //console.log(times, values)
-      dispatch( upgradeOriginData(prjTitle, times, values) )
-      times=null
-      values=null
-      next()
-    }
+
+    // 改为将 txt 原文件上传至服务器，由服务器来序列化和分析数据，同时提供下载 xlsx 分析结果文件功能
+    let formData = new FormData()
+    formData.append('txtfilename', file.name)
+    formData.append('txtfile', file)
+    let res = await api.post('/txtfile/upload-txt', formData)
+    let {prjTitle, times, values} = res
+    dispatch( upgradeOriginData(prjTitle, times, values) )
+    next()
   }
 
   const filter = (filterType) => {
