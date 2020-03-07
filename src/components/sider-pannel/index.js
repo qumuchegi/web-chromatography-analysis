@@ -7,6 +7,8 @@ import StepLabel from '@material-ui/core/StepLabel'
 import Button from '@material-ui/core/Button'
 import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField';
+import Select from '@material-ui/core/Select'
+import MenuItem from '@material-ui/core/MenuItem'
 
 import jsonFile from '../../assets/imgs/json.png'
 import avatarSrc from '../../assets/imgs/avatar.jpeg'
@@ -31,6 +33,12 @@ const {dispatch, getState} = store
 const average_filter_worker_url =  './data-process/filter.js'
 const peak_ident_worker_url =  './data-process/peak-identify.js' // 使用 worker 的方式调用峰识别函数
 
+const filter_type = {
+  average: '平均滤波',
+  mid: '中值滤波',
+  multi: '多项式滤波',
+}
+
 const useStyles = makeStyles(theme => ({
   root: {
     width: '100%',
@@ -50,11 +58,21 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function getSteps(win_filter, win_peakIdent) {
-  return ['导入色谱数据(txt 文件格式)', `滤波( 滤波窗口大小 ${win_filter})`, `峰识别和定性定量计算(一阶导峰检测窗口大小 ${win_peakIdent})`];
+function getSteps(win_filter, win_peakIdent, filterType,m) {
+  return ['导入色谱数据 ( txt 文件格式 )', `滤波 ( ${filterType} , ${filterType===filter_type.multi? '多项式拟合次数'+m:'滤波窗口大小'+win_filter } )`, `峰识别和定性定量计算 ( 一阶导峰检测窗口大小 ${win_peakIdent} )`];
 }
 
-function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, buttonHadClicked, onWinFilterChange, onWinPeakIdentChange}) {
+function getStepContent(stepIndex,{
+  onFileChange, 
+  filterType,
+  m,
+  onSelectFilterType,
+  filter, 
+  peakIdent, 
+  buttonHadClicked, 
+  onWinFilterChange, 
+  onWinPeakIdentChange
+}) {
   switch (stepIndex) {
     case 0:
       return <div>
@@ -67,14 +85,38 @@ function getStepContent(stepIndex,{onFileChange, filter, peakIdent, compute, but
       ;
     case 1:
       return <>
-        <TextField onChange={onWinFilterChange} size='small' id="outlined-basic"  variant="outlined" label="设置滤波窗口大小" />
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={filterType}
+          onChange={onSelectFilterType}
+        >
+          <MenuItem value={filter_type.average}>移动平均滤波</MenuItem>
+          <MenuItem value={filter_type.mid}>中值滤波</MenuItem>
+          <MenuItem value={filter_type.multi}>多项式拟合滤波</MenuItem>
+        </Select>
+        {
+          filterType===filter_type.multi ?
+          <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={m}
+          onChange={onWinFilterChange}
+          >
+            <MenuItem value={2}>拟合次数 2</MenuItem>
+            <MenuItem value={3}>拟合次数 3</MenuItem>
+          </Select>
+          :
+          <TextField onChange={onWinFilterChange} size='small' id="outlined-basic"  variant="outlined" label="设置滤波窗口大小" />
+        }
+       
         <Button onClick={filter} color="secondary" variant="outlined" disabled={buttonHadClicked}>
           滤波
         </Button>
       </>;
     case 2:
       return <>
-        <TextField onChange={onWinPeakIdentChange} size='small' variant="outlined" label="设置检峰窗口大小" />
+        <TextField onChange={onWinPeakIdentChange} size='small' variant="outlined"   label="设置检峰窗口大小"/>
         <Button onClick={peakIdent} color="primary" variant="outlined" disabled={buttonHadClicked}>
           峰检测和定性定量计算
         </Button>
@@ -89,9 +131,11 @@ export default function(){
   const [activeStep, setActiveStep] = React.useState(0)
   const [win_filter, setWin_filter] = React.useState(0)
   const [win_peakIdent, setWin_peakIdent] = React.useState(0)
+  const [m, setM] = React.useState(2)
   const [buttonHadClicked, setButtonHadClicked] = React.useState(false)
+  const [filterType, setFilterType] = React.useState(filter_type.average)
 
-  const steps = getSteps(win_filter, win_peakIdent)
+  const steps = getSteps(win_filter, win_peakIdent,filterType,m)
 
   const next = () => {
     setActiveStep(prevActiveStep => prevActiveStep + 1)
@@ -121,13 +165,22 @@ export default function(){
     next()
   }
 
-  const filter = (filterType) => {
+  const onSelectFilterType = (e) => {
+    console.log(e.target.value)
+    setFilterType(e.target.value)
+  }
+
+  const filter = () => {
+    if(
+      !win_filter && filterType!==filter_type.multi
+    ) return alert('请输入滤波窗口大小')
     setButtonHadClicked(true)
     let yArr = getState().dataReducer.data_origin.values
     //average_filter(yData)
     let filter_worker = new Worker(average_filter_worker_url)
     console.log('滤波前原始数据：', yArr)
-    filter_worker.postMessage([yArr, win_filter])
+    
+    filter_worker.postMessage([yArr, filterType===filter_type.multi ? m:win_filter, filterType])
     filter_worker.onmessage=data=>{
       console.log('滤波线程返回：', data.data)
       dispatch( savefilteredData(data.data) )
@@ -138,6 +191,7 @@ export default function(){
   }
 
   const peakIdent = () => {
+    if(!win_peakIdent && filterType!==filter_type.multi) return alert('请输入峰检测窗口大小')
     setButtonHadClicked(true)
     let peak_worker = new Worker(peak_ident_worker_url)
     let times = getState().dataReducer.data_origin.times
@@ -155,13 +209,14 @@ export default function(){
   }
 
   const onWinFilterChange = (e) => {
+    filterType===filter_type.multi ?
+    setM(e.target.value)
+    :
     setWin_filter(e.target.value)
   }
   const onWinPeakIdentChange = (e) => {
+    
     setWin_peakIdent(e.target.value)
-  }
-  const compute = () => {
-    next()
   }
 
   return(
@@ -182,8 +237,19 @@ export default function(){
             </div>
           ) : (
             <div className="mannul-step-button">
-              {buttonHadClicked?<img src={loadingIcon} alt='' id="loading-icon"/>:null}
-              {getStepContent(activeStep,{onFileChange, filter, peakIdent, compute, buttonHadClicked, onWinFilterChange, onWinPeakIdentChange})}
+              {buttonHadClicked?<div><img src={loadingIcon} alt='' id="loading-icon"/></div>:null}
+              {getStepContent(activeStep,
+                {
+                  onFileChange, 
+                  filterType,
+                  m,
+                  onSelectFilterType,
+                  filter, 
+                  peakIdent, 
+                  buttonHadClicked, 
+                  onWinFilterChange, 
+                  onWinPeakIdentChange
+                })}
             </div>
           )}
         </div>
@@ -201,7 +267,12 @@ export default function(){
         <div id='prj-extensions-link'>
           <div>
             <img src={codeIcon} alt='' style={{width:'20px',display:'block'}}/>
-            <div style={{fontSize:'.9rem'}}>项目开源</div>
+            <div style={{fontSize:'.9rem'}}>
+              <a href='https://github.com/qumuchegi/web-chromatography-analysis'
+                 target='_blank'
+                 rel="noopener noreferrer"
+              >项目开源</a>
+            </div>
           </div>
           <div>
             <img src={keyTechIcon} alt='' style={{width:'20px',display:'block'}}/>

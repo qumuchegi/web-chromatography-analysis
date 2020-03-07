@@ -5,10 +5,14 @@
   height: 100vh;
   min-height: 780px;
 }
-.mannul-step-button{
-  display: flex;
-  justify-content: center;
-  align-items: center;
+.mannul-step-button>div,.mannul-step-button>button,.mannul-step-button>p{
+  text-align: center;
+  display: block;
+  max-width: 200px;
+  margin: 10px auto ;
+}
+.mannul-step-button>button{
+
 }
 #file-input-button{
   padding: 2px;
