@@ -2,17 +2,17 @@ var router = require('express').Router()
 const upload = require('../middlewere/file-upgrade')
 const txt2json = require('../middlewere/txt2json')
 const makeXlsx = require('../middlewere/makexlsx')
+const rmfile = require('../middlewere/rmfiles')
 
-router.post('/upload-txt',upload('files/').any(),(req,res,next)=>{
+router.post('/upload-txt',upload('server/files/').any(),(req,res,next)=>{
   const {txtfilename}= req.body
-  txt2json( txtfilename, './files', ( times, values )=>{
+  txt2json( txtfilename, 'server/files', ( times, values )=>{
     res.json({
       code:0, 
       data:{prjTitle: txtfilename, times, values}
     })
   })
 })
-
 router.post('/download-xlsx',(req, res, next)=>{
   let {rows} = req.body
   console.log(rows)
@@ -38,5 +38,11 @@ router.post('/download-xlsx',(req, res, next)=>{
     res.end(xlsxfile)
   })
 })
-
+router.delete('/removefiles',(req,res,next)=>{
+  let {filename} = req.body
+  console.log('filename', filename)
+  rmfile(filename.replace('.txt',''),()=>{
+    res.json({data:{code:0,msg:'成功删除临时文件'}})
+  })
+})
 module.exports = router

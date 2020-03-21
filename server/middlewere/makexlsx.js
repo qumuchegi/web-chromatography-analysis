@@ -35,6 +35,6 @@ function makeXlsx(_data,resCb){
       }
   };
   // 导出 Excel
-  XLSX.writeFile(wb, './files/result.xlsx')
-  resCb(fs.readFileSync('./files/result.xlsx'))
+  XLSX.writeFile(wb, 'server/files/result.xlsx')
+  resCb(fs.readFileSync('server/files/result.xlsx'))
 }

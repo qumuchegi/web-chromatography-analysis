@@ -128,6 +128,7 @@ function getStepContent(stepIndex,{
 
 export default function(){
   const classes = useStyles()
+  const [filename, setFilename] = React.useState(null)
   const [activeStep, setActiveStep] = React.useState(0)
   const [win_filter, setWin_filter] = React.useState(0)
   const [win_peakIdent, setWin_peakIdent] = React.useState(0)
@@ -145,16 +146,20 @@ export default function(){
     setActiveStep(prevActiveStep => prevActiveStep - 1)
   }
 
-  const handleReset = () => {
+  const handleReset = async() => {
     dispatch( clearStore )
-    setActiveStep(0)
+    let res = await api.delete('/txtfile/removefiles',{filename})
+    if(res.code===0){
+      console.log(res.msg)
+      setActiveStep(0)
+    }
   }
 
   const onFileChange = async(e) => {
     e.persist()
     let file = e.target.files[0]
     if(!file) return
-
+    setFilename(file.name)
     // 改为将 txt 原文件上传至服务器，由服务器来序列化和分析数据，同时提供下载 xlsx 分析结果文件功能
     let formData = new FormData()
     formData.append('txtfilename', file.name)
@@ -166,7 +171,6 @@ export default function(){
   }
 
   const onSelectFilterType = (e) => {
-    console.log(e.target.value)
     setFilterType(e.target.value)
   }
 
@@ -197,7 +201,6 @@ export default function(){
     let times = getState().dataReducer.data_origin.times
     let values_filtered = getState().dataReducer.data_filtered
     peak_worker.postMessage([times, values_filtered, win_peakIdent])
-    //console.log('peak_worker:',peak_worker)
     peak_worker.onmessage=(data)=>{
       console.log('子线程返回检测到的峰:',data.data)
       dispatch( savePeakIdentData(data.data) )
@@ -215,7 +218,6 @@ export default function(){
     setWin_filter(e.target.value)
   }
   const onWinPeakIdentChange = (e) => {
-    
     setWin_peakIdent(e.target.value)
   }
 

@@ -15,6 +15,9 @@ export default{
   },
   download_xlsx: async function(path='/', data){
     return download( await axios.post(serverUrl+path, data,{ responseType: 'blob'}) )
+  },
+  delete: async function(path='/',data){
+    return response( await axios.delete(serverUrl+path, {data}))
   }
 }
 
@@ -30,7 +33,7 @@ function response(res){
   let {status, data} = res
   if(status===200){
     console.log(data)
-    console.log(typeof data)
+
     return data.data
   }
 }
