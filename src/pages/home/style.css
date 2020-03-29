@@ -8,3 +8,41 @@
 #main-container{
   flex:3;
 }
+#prj-description{
+  background-color: rgb(121, 213, 241);
+  padding-top: 0px;
+  padding-left: 10px;
+  padding-bottom: 20px;
+}
+#github-link{
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  float: right;
+  background-color: white;
+  border: solid 2px rgb(121, 213, 241);
+  border-radius:10px ;
+  top:0;
+  right: 0;
+  width:160px;
+  padding: 4px;
+  padding-left: 10px;
+  text-align: right;
+}
+#prj-extensions-link{
+  display: flex;
+  justify-content: start;
+  flex-wrap: wrap;
+}
+#prj-extensions-link>div{
+  display: flex;
+  justify-content: space-between;
+  width: 90px;
+  margin: 5px;
+  border:solid 1px white;
+  padding: 2px;
+}
+#prj-extensions-link>div:hover{
+  cursor: pointer;
+  color:rgb(150, 94, 12);
+}

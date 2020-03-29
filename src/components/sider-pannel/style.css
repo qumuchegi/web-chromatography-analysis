@@ -1,9 +1,14 @@
 #sider{
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 100vh;
-  min-height: 780px;
+  justify-content: flex-start;
+  flex:1;
+}
+.mannul-pannel{
+  width: 100%
+}
+.hide-pannel{
+  display: none;
 }
 .mannul-step-button>div,.mannul-step-button>button,.mannul-step-button>p{
   text-align: center;
@@ -14,22 +19,17 @@
 .mannul-step-button>button{
 
 }
-#file-input-button{
+#file-input-button-1,#file-input-button-2{
   padding: 2px;
   border-radius: 3px;
   display: flex;
   justify-content: center;
+  border: dotted 2px #aaa;
 }
-#file-input-button:hover{
+#file-input-button-1:hover, #file-input-button-2:hover{
   background-color: #eee;
 }
-#prj-description{
-  
-  background-color: rgb(121, 213, 241);
-  padding-top: 0px;
-  padding-left: 10px;
-  padding-bottom: 20px;
-}
+
 @keyframes rotateLoading{
   from{transform: rotate(0deg);}
   to{transform: rotate(360deg);}
@@ -40,35 +40,46 @@ img#loading-icon{
   height: 20px;
   animation: 1s linear 0s infinite rotateLoading;
 }
-#github-link{
+.strong-span{
+  padding: 3px;
+  background-color: #eee;
+  color:rgb(228, 74, 74);
+  border-radius: 4px;
+}
+.strong-div{
+  padding: 3px;
+  border-style: solid;
+  border-width: .5px;
+  border-color: #ccc;
+  color:rgb(31, 114, 161);
+  border-radius: 4px;
+}
+
+#operation-mode-pannel{
+  padding: 10px;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-start;
   align-items: center;
-  float: right;
-  background-color: white;
-  border: solid 2px rgb(121, 213, 241);
-  border-radius:10px ;
-  top:0;
-  right: 0;
-  width:160px;
-  padding: 4px;
-  padding-left: 10px;
-  text-align: right;
+  margin: 0;
 }
-#prj-extensions-link{
-  display: flex;
-  justify-content: start;
-  flex-wrap: wrap;
+#switch-background[class='mannul']{
+  fill: #ccc;
+  transition: fill .2s;
 }
-#prj-extensions-link>div{
-  display: flex;
-  justify-content: space-between;
-  width: 90px;
-  margin: 5px;
-  border:solid 1px white;
-  padding: 2px;
+#switch-background[class='auto']{
+  fill: #296;
+  transition: fill .2s;
 }
-#prj-extensions-link>div:hover{
-  cursor: pointer;
-  color:rgb(150, 94, 12);
+#mode-handle[class='auto']{
+  cx: 22;
+  cy: 21;
+  transition: cx .2s;
+}
+#mode-handle[class='mannul']{
+  cx: 42;
+  cy: 21;
+  transition: cx .2s;
+}
+#auto-pannel-set-form{
+  padding: 10px;
 }

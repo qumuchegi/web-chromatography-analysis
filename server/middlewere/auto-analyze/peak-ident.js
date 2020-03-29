@@ -1,15 +1,7 @@
-/**
- * 峰识别
- */
-//import {pureReverse, pureSort} from '../utils/index'
-
-// 子线程
-onmessage = function(e){
-  let [xArr, yArr, win_peakIdent] = e.data
-  console.log(e.data)
-  postMessage( peak_ident(xArr,yArr, Number(win_peakIdent)) )
+const peakIdent = module.exports = {
+  一阶导数法: peak_ident1
 }
-
+module.exports = peakIdent
 let featurePoints = [] // 线程要返回的峰的列表
 
 class FeaturePointOfPeak{ // 一个峰的特征点
@@ -51,8 +43,17 @@ let areaPeak = 0 // 面积
 
 let areaTotal = 0
 
-function peak_ident(xArr, yArr,  win_peakIdent){
-  console.log({xArr, yArr, win_peakIdent})
+/**
+ * 
+ * @param {横坐标，时间} xArr 
+ * @param {纵坐标，电压值} yArr 
+ * @param {峰识别窗口大小} win_peakIdent 
+ * return 识别到的峰数组
+ */
+function peak_ident1(xArr, yArr,  win_peakIdent){
+  // 清空之前文件分析得到的结果
+  featurePoints=[]
+  //console.log({xArr, yArr, win_peakIdent})
   let n =  win_peakIdent||100//100 //窗口大小, 对于变压油宜设置20~50
   let i = 0, {length: total_l} = yArr
 

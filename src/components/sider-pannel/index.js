@@ -9,14 +9,14 @@ import Typography from '@material-ui/core/Typography'
 import TextField from '@material-ui/core/TextField';
 import Select from '@material-ui/core/Select'
 import MenuItem from '@material-ui/core/MenuItem'
+import Radio from '@material-ui/core/Radio';
+import RadioGroup from '@material-ui/core/RadioGroup';
+import FormControlLabel from '@material-ui/core/FormControlLabel';
+import FormControl from '@material-ui/core/FormControl';
+import FormLabel from '@material-ui/core/FormLabel';
 
 import jsonFile from '../../assets/imgs/json.png'
-import avatarSrc from '../../assets/imgs/avatar.jpeg'
-import codeIcon from '../../assets/imgs/code.png'
-import renferIcon from '../../assets/imgs/cankao.png'
-import keyTechIcon from '../../assets/imgs/keyTech.png'
 import loadingIcon from '../../assets/imgs/loading.png'
-import githubIcon from '../../assets/imgs/github.png'
 
 import './style.css'
 
@@ -38,11 +38,12 @@ const filter_type = {
   mid: '中值滤波',
   multi: '多项式滤波',
 }
+const peakIdent_type = {
+  first: '一阶导数法',
+  mark: '移动标识法'
+}
 
 const useStyles = makeStyles(theme => ({
-  root: {
-    width: '100%',
-  },
   avatar: {
     display: 'flex',
     '& > *': {
@@ -59,7 +60,29 @@ const useStyles = makeStyles(theme => ({
 }))
 
 function getSteps(win_filter, win_peakIdent, filterType,m) {
-  return ['导入色谱数据 ( txt 文件格式 )', `滤波 ( ${filterType} , ${filterType===filter_type.multi? '多项式拟合次数'+m:'滤波窗口大小'+win_filter } )`, `峰识别和定性定量计算 ( 一阶导峰检测窗口大小 ${win_peakIdent} )`];
+  return [
+    <div>
+      <h4>导入色谱数据</h4><span className='strong-span'>txt 文件格式</span></div>, 
+    <div>
+      <h4>滤波</h4> 
+      <div className='strong-div'>
+        <div>{filterType}</div>
+        <div>
+          {
+          filterType===filter_type.multi ? 
+          <strong className='strong-span'>多项式拟合次数 {m}</strong>
+          :<strong className='strong-span'>滤波窗口大小 {win_filter} </strong>
+        }
+        </div>
+      </div>
+    </div>, 
+    <div>
+      <h4>峰识别和定性定量计算</h4>
+      <div className='strong-div'>一阶导峰检测窗口大小
+        <span className='strong-span'>{win_peakIdent}</span>
+      </div>
+    </div>
+  ]
 }
 
 function getStepContent(stepIndex,{
@@ -76,11 +99,11 @@ function getStepContent(stepIndex,{
   switch (stepIndex) {
     case 0:
       return <div>
-        <label htmlFor='file' id="file-input-button">
+        <label htmlFor='file-2' id="file-input-button-2">
           <img src={jsonFile} alt='上传' style={{width: '20px', display:'block'}}></img>
           导入数据（txt）
         </label>
-        <input type='file' id='file' style={{display:'none'}} onChange={onFileChange}/>
+        <input type='file' id='file-2' style={{display:'none'}} onChange={onFileChange}/>
       </div>
       ;
     case 1:
@@ -135,6 +158,46 @@ export default function(){
   const [m, setM] = React.useState(2)
   const [buttonHadClicked, setButtonHadClicked] = React.useState(false)
   const [filterType, setFilterType] = React.useState(filter_type.average)
+  const [peakIdentType, setPeakIdentType] = React.useState(peakIdent_type.first)
+
+  React.useEffect(() => {
+    const mode={
+      mannul:'auto',
+      auto:'mannul'
+   }
+    function onClickSVG(){
+      dispatch( clearStore )
+
+      let bg = document.getElementById('switch-background')
+      let handle = document.getElementById('mode-handle')
+      let mannulPannel = document.getElementsByClassName('mannul-pannel')[0]
+      let autoPannel = document.getElementsByClassName('auto-pannel')[0]
+
+      bg.setAttribute('class', mode[bg.className.baseVal])
+      handle.setAttribute('class', mode[handle.className.baseVal])
+
+      if(mannulPannel.classList.contains('show-pannel')){
+        mannulPannel.classList.remove(`show-pannel`)
+        mannulPannel.classList.add(`hide-pannel`)
+      }else{
+        mannulPannel.classList.remove(`hide-pannel`)
+        mannulPannel.classList.add(`show-pannel`)
+      }
+ 
+      if(autoPannel.classList.contains('show-pannel')){
+        autoPannel.classList.remove(`show-pannel`)
+        autoPannel.classList.add(`hide-pannel`)
+      }else{
+        autoPannel.classList.remove(`hide-pannel`)
+        autoPannel.classList.add(`show-pannel`)
+      }
+    }
+    document.getElementById('switch').addEventListener('click', onClickSVG,false)
+    
+    return () => {
+      document.getElementById('switch').removeEventListener('click', onClickSVG)
+    }
+  }, [])
 
   const steps = getSteps(win_filter, win_peakIdent,filterType,m)
 
@@ -155,6 +218,28 @@ export default function(){
     }
   }
 
+  const autoAnalyze = async(e) => {
+    e.persist()
+    let file = e.target.files[0]
+    if(!file) return
+    setFilename(file.name)
+    let formData = new FormData()
+    formData.append('txtfilename', file.name)
+    formData.append('txtfile', file)
+    //  filterWin, filterType, peakIdentWin, peakIdentType
+    formData.append('filterWin', win_filter)
+    formData.append('peakIdentWin', win_peakIdent)
+    formData.append('filterType', filterType)
+    formData.append('peakIdentType', peakIdentType)
+
+    let res = await api.post('/auto-analyze', formData)
+    let {peaks, rawData} = res
+
+    let {xArr:times, yArr:values} = rawData
+    dispatch( upgradeOriginData(file.name, times, values) )
+    dispatch( savePeakIdentData(peaks) )
+  }
+
   const onFileChange = async(e) => {
     e.persist()
     let file = e.target.files[0]
@@ -172,6 +257,10 @@ export default function(){
 
   const onSelectFilterType = (e) => {
     setFilterType(e.target.value)
+  }
+
+  const onSelectPeakIdentType = (e) => {
+    setPeakIdentType(e.target.value)
   }
 
   const filter = () => {
@@ -223,7 +312,47 @@ export default function(){
 
   return(
     <div id='sider'>
-      <div className={classes.root}>
+      <div id='operation-mode-pannel'>
+        <h4>是否自动分析</h4>
+        <svg width="60" height="40" id='switch'>
+          <rect x="10" y="10" width="44" height="22"  stroke-width='3' rx='11' ry='11' id='switch-background' className='mannul'/>
+          <circle r='10' fill='white' stroke-width='4' id='mode-handle' className='mannul'/>
+        </svg>
+      </div>
+      <div className='auto-pannel hide-pannel'>
+        <div>
+          <div id='auto-pannel-set-form'>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">选择滤波方法</FormLabel>
+              <RadioGroup aria-label="gender" name="gender1" value={filterType} onChange={onSelectFilterType}>
+                <FormControlLabel value={filter_type.average} control={<Radio />} label={filter_type.average} />
+                <FormControlLabel value={filter_type.mid} control={<Radio />} label={filter_type.mid} />
+                <FormControlLabel value={filter_type.multi} control={<Radio />} label={filter_type.multi} />
+              </RadioGroup>
+            </FormControl>
+            <FormControl component="fieldset">
+              <TextField label={`${filterType} 滤波窗口`} variant="outlined" onChange={onWinFilterChange} size='small'/>
+            </FormControl>
+            <FormControl component="fieldset">
+              <FormLabel component="legend">选择峰识别方法</FormLabel>
+              <RadioGroup aria-label="gender" name="gender1" value={peakIdentType} onChange={onSelectPeakIdentType}>
+                <FormControlLabel value={peakIdent_type.first} control={<Radio />} label={peakIdent_type.first} />
+                <FormControlLabel value={peakIdent_type.mark} control={<Radio />} label={peakIdent_type.mark} />
+              </RadioGroup>
+            </FormControl>
+            <FormControl component="fieldset">
+              <TextField label={`${peakIdentType} 滤波窗口`} variant="outlined" onChange={onWinPeakIdentChange} size='small'/>
+            </FormControl>
+          </div>
+          
+          <label htmlFor='file-1' id="file-input-button-1">
+            <img src={jsonFile} alt='上传' style={{width: '20px', display:'block'}}></img>
+            导入数据（txt）即可开始分析
+          </label>
+          <input type='file' id='file-1' style={{display:'none'}} onChange={autoAnalyze}/>
+        </div>
+      </div>
+      <div className='mannul-pannel show-pannel'>
         <Stepper activeStep={activeStep}  orientation="vertical">
           {steps.map(label => (
             <Step key={label}>
@@ -254,36 +383,6 @@ export default function(){
                 })}
             </div>
           )}
-        </div>
-      </div>
-      <div id='prj-description'>
-        <div id='github-link'>
-          <div>曲木车格</div>
-          <a href='https://github.com/qumuchegi' target='_blank' rel="noopener noreferrer">
-            <img src={githubIcon} alt='' style={{width: '40px'}}/>
-          </a>
-        </div>
-        <div className={classes.root}>
-          <h4>东南大学仪科学院·毕设项目</h4>
-        </div>
-        <div id='prj-extensions-link'>
-          <div>
-            <img src={codeIcon} alt='' style={{width:'20px',display:'block'}}/>
-            <div style={{fontSize:'.9rem'}}>
-              <a href='https://github.com/qumuchegi/web-chromatography-analysis'
-                 target='_blank'
-                 rel="noopener noreferrer"
-              >项目开源</a>
-            </div>
-          </div>
-          <div>
-            <img src={keyTechIcon} alt='' style={{width:'20px',display:'block'}}/>
-            <div style={{fontSize:'.9rem'}}>关键算法</div>
-          </div>
-          <div>
-            <img src={renferIcon} alt='' style={{width:'20px',display:'block'}}/>
-            <div style={{fontSize:'.9rem'}}>参考</div>
-          </div>
         </div>
       </div>
     </div>

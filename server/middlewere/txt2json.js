@@ -1,6 +1,6 @@
 const fs = require('fs')
 const stream = require('stream')
-const transform = stream.Transform
+const Transform = stream.Transform
 
 module.exports = txt2json
 
@@ -8,7 +8,8 @@ function txt2json(txtFileName, dirname, resCb){
   let matchLine = /\d*\.\d{6}[\t\s]+\d*\.\d{3}/g
   let readStream = fs.createReadStream(`${dirname}/${txtFileName}`)
   let times = [], values = []
-  let transLine = new transform({
+
+  let transLine = new Transform({
     transform(chunk,encoding,cb){
       let lines = chunk.toString().match(matchLine)
       lines.forEach(
@@ -26,6 +27,7 @@ function txt2json(txtFileName, dirname, resCb){
   
   readStream
   .pipe(transLine)
+  
   transLine.on('data',(chunk)=>{//不知道为什么，只有监听 data ，下面的 end 事件才会触发
     //console.log(chunk)
   })
