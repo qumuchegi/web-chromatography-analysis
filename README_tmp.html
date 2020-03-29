@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>README.md</title>
+<meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+
+<style>
+/* https://github.com/microsoft/vscode/blob/master/extensions/markdown-language-features/media/markdown.css */
+/*---------------------------------------------------------------------------------------------
+ *  Copyright (c) Microsoft Corporation. All rights reserved.
+ *  Licensed under the MIT License. See License.txt in the project root for license information.
+ *--------------------------------------------------------------------------------------------*/
+
+body {
+	font-family: var(--vscode-markdown-font-family, -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif);
+	font-size: var(--vscode-markdown-font-size, 14px);
+	padding: 0 26px;
+	line-height: var(--vscode-markdown-line-height, 22px);
+	word-wrap: break-word;
+}
+
+#code-csp-warning {
+	position: fixed;
+	top: 0;
+	right: 0;
+	color: white;
+	margin: 16px;
+	text-align: center;
+	font-size: 12px;
+	font-family: sans-serif;
+	background-color:#444444;
+	cursor: pointer;
+	padding: 6px;
+	box-shadow: 1px 1px 1px rgba(0,0,0,.25);
+}
+
+#code-csp-warning:hover {
+	text-decoration: none;
+	background-color:#007acc;
+	box-shadow: 2px 2px 2px rgba(0,0,0,.25);
+}
+
+body.scrollBeyondLastLine {
+	margin-bottom: calc(100vh - 22px);
+}
+
+body.showEditorSelection .code-line {
+	position: relative;
+}
+
+body.showEditorSelection .code-active-line:before,
+body.showEditorSelection .code-line:hover:before {
+	content: "";
+	display: block;
+	position: absolute;
+	top: 0;
+	left: -12px;
+	height: 100%;
+}
+
+body.showEditorSelection li.code-active-line:before,
+body.showEditorSelection li.code-line:hover:before {
+	left: -30px;
+}
+
+.vscode-light.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.15);
+}
+
+.vscode-light.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(0, 0, 0, 0.40);
+}
+
+.vscode-light.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-dark.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.4);
+}
+
+.vscode-dark.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 255, 255, 0.60);
+}
+
+.vscode-dark.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+.vscode-high-contrast.showEditorSelection .code-active-line:before {
+	border-left: 3px solid rgba(255, 160, 0, 0.7);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line:hover:before {
+	border-left: 3px solid rgba(255, 160, 0, 1);
+}
+
+.vscode-high-contrast.showEditorSelection .code-line .code-line:hover:before {
+	border-left: none;
+}
+
+img {
+	max-width: 100%;
+	max-height: 100%;
+}
+
+a {
+	text-decoration: none;
+}
+
+a:hover {
+	text-decoration: underline;
+}
+
+a:focus,
+input:focus,
+select:focus,
+textarea:focus {
+	outline: 1px solid -webkit-focus-ring-color;
+	outline-offset: -1px;
+}
+
+hr {
+	border: 0;
+	height: 2px;
+	border-bottom: 2px solid;
+}
+
+h1 {
+	padding-bottom: 0.3em;
+	line-height: 1.2;
+	border-bottom-width: 1px;
+	border-bottom-style: solid;
+}
+
+h1, h2, h3 {
+	font-weight: normal;
+}
+
+table {
+	border-collapse: collapse;
+}
+
+table > thead > tr > th {
+	text-align: left;
+	border-bottom: 1px solid;
+}
+
+table > thead > tr > th,
+table > thead > tr > td,
+table > tbody > tr > th,
+table > tbody > tr > td {
+	padding: 5px 10px;
+}
+
+table > tbody > tr + tr > td {
+	border-top: 1px solid;
+}
+
+blockquote {
+	margin: 0 7px 0 5px;
+	padding: 0 16px 0 10px;
+	border-left-width: 5px;
+	border-left-style: solid;
+}
+
+code {
+	font-family: Menlo, Monaco, Consolas, "Droid Sans Mono", "Courier New", monospace, "Droid Sans Fallback";
+	font-size: 1em;
+	line-height: 1.357em;
+}
+
+body.wordWrap pre {
+	white-space: pre-wrap;
+}
+
+pre:not(.hljs),
+pre.hljs code > div {
+	padding: 16px;
+	border-radius: 3px;
+	overflow: auto;
+}
+
+pre code {
+	color: var(--vscode-editor-foreground);
+	tab-size: 4;
+}
+
+/** Theming */
+
+.vscode-light pre {
+	background-color: rgba(220, 220, 220, 0.4);
+}
+
+.vscode-dark pre {
+	background-color: rgba(10, 10, 10, 0.4);
+}
+
+.vscode-high-contrast pre {
+	background-color: rgb(0, 0, 0);
+}
+
+.vscode-high-contrast h1 {
+	border-color: rgb(0, 0, 0);
+}
+
+.vscode-light table > thead > tr > th {
+	border-color: rgba(0, 0, 0, 0.69);
+}
+
+.vscode-dark table > thead > tr > th {
+	border-color: rgba(255, 255, 255, 0.69);
+}
+
+.vscode-light h1,
+.vscode-light hr,
+.vscode-light table > tbody > tr + tr > td {
+	border-color: rgba(0, 0, 0, 0.18);
+}
+
+.vscode-dark h1,
+.vscode-dark hr,
+.vscode-dark table > tbody > tr + tr > td {
+	border-color: rgba(255, 255, 255, 0.18);
+}
+
+</style>
+
+<style>
+/* Tomorrow Theme */
+/* http://jmblog.github.com/color-themes-for-google-code-highlightjs */
+/* Original theme - https://github.com/chriskempson/tomorrow-theme */
+
+/* Tomorrow Comment */
+.hljs-comment,
+.hljs-quote {
+	color: #8e908c;
+}
+
+/* Tomorrow Red */
+.hljs-variable,
+.hljs-template-variable,
+.hljs-tag,
+.hljs-name,
+.hljs-selector-id,
+.hljs-selector-class,
+.hljs-regexp,
+.hljs-deletion {
+	color: #c82829;
+}
+
+/* Tomorrow Orange */
+.hljs-number,
+.hljs-built_in,
+.hljs-builtin-name,
+.hljs-literal,
+.hljs-type,
+.hljs-params,
+.hljs-meta,
+.hljs-link {
+	color: #f5871f;
+}
+
+/* Tomorrow Yellow */
+.hljs-attribute {
+	color: #eab700;
+}
+
+/* Tomorrow Green */
+.hljs-string,
+.hljs-symbol,
+.hljs-bullet,
+.hljs-addition {
+	color: #718c00;
+}
+
+/* Tomorrow Blue */
+.hljs-title,
+.hljs-section {
+	color: #4271ae;
+}
+
+/* Tomorrow Purple */
+.hljs-keyword,
+.hljs-selector-tag {
+	color: #8959a8;
+}
+
+.hljs {
+	display: block;
+	overflow-x: auto;
+	color: #4d4d4c;
+	padding: 0.5em;
+}
+
+.hljs-emphasis {
+	font-style: italic;
+}
+
+.hljs-strong {
+	font-weight: bold;
+}
+</style>
+
+<style>
+/*
+ * Markdown PDF CSS
+ */
+
+ body {
+	font-family: -apple-system, BlinkMacSystemFont, "Segoe WPC", "Segoe UI", "Ubuntu", "Droid Sans", sans-serif, "Meiryo";
+	padding: 0 12px;
+}
+
+pre {
+	background-color: #f8f8f8;
+	border: 1px solid #cccccc;
+	border-radius: 3px;
+	overflow-x: auto;
+	white-space: pre-wrap;
+	overflow-wrap: break-word;
+}
+
+pre:not(.hljs) {
+	padding: 23px;
+	line-height: 19px;
+}
+
+blockquote {
+	background: rgba(127, 127, 127, 0.1);
+	border-color: rgba(0, 122, 204, 0.5);
+}
+
+.emoji {
+	height: 1.4em;
+}
+
+code {
+	font-size: 14px;
+	line-height: 19px;
+}
+
+/* for inline code */
+:not(pre):not(.hljs) > code {
+	color: #C9AE75; /* Change the old color so it seems less like an error */
+	font-size: inherit;
+}
+
+/* Page Break : use <div class="page"/> to insert page break
+-------------------------------------------------------- */
+.page {
+	page-break-after: always;
+}
+
+</style>
+
+<script src="https://unpkg.com/mermaid/dist/mermaid.min.js"></script>
+</head>
+<body>
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: document.body.classList.contains('vscode-dark') || document.body.classList.contains('vscode-high-contrast')
+          ? 'dark'
+          : 'default'
+    });
+  </script>
+<h2 id="%E5%9F%BA%E4%BA%8E-react-web-%E7%9A%84%E8%89%B2%E8%B0%B1%E5%88%86%E6%9E%90%E8%BD%AF%E4%BB%B6-%E4%B8%9C%E5%8D%97%E5%A4%A7%E5%AD%A6%E4%BB%AA%E7%A7%91%E5%AD%A6%E9%99%A2%E6%AF%95%E8%AE%BE%E9%A1%B9%E7%9B%AE">基于 React web 的色谱分析软件 (东南大学仪科学院毕设项目)</h2>
+<h4 id="%E7%AE%97%E6%B3%95%E6%B5%81%E7%A8%8B%E5%88%86%E4%B8%BA">算法流程分为：</h4>
+<blockquote>
+<p>滤波(移动平均滤波)<br>
+-&gt;<br>
+峰识别(一阶导数法，宽松条件判断色谱波形和导数波形的单增单减)<br>
+-&gt;<br>
+重叠峰分解（垂线法）<br>
+-&gt;<br>
+定性定量分析(峰面积、各组分含量)</p>
+</blockquote>
+<h4 id="%E4%BD%BF%E7%94%A8">使用：</h4>
+<p>首先确保机器安装了 node.js</p>
+<p>git clone 本仓库到本地后：</p>
+<ol>
+<li>开启服务，分为前端网页服务和后端文件数据处理服务：</li>
+</ol>
+<blockquote>
+<p>开启本地网页服务,在项目根目录执行 <code>npm start</code>，然后打开 <code>localhost:3000</code> ,可以看到前度网页，色谱文件的上传，谱图绘制，分析结果都会通过这个页面展示。<br>
+开启后端服务, 执行 <code>npm run server</code>，server 可以提供后端文件数据序列化、下载 xlsx 文件的功能</p>
+</blockquote>
+<ol start="2">
+<li>
+<p>进入文件夹 <code>原始数据</code>, 里面有色谱原始 txt 格式文件，在网页中打开，后端即可序列化这个 txt 文件，将其转化为 json 文件，再传回给前端，前端会将色谱绘制出来，依次点击 <code>滤波</code>、<code>峰检测即可</code>，前端会开启线程分析色谱，点击保存分析结果，可以下载 xlsx 格式的色谱分析结果。</p>
+</li>
+<li>
+<p>提供了色谱绘制和分析结果整理成表单，可以下载表单供分析。</p>
+</li>
+</ol>
+<h4 id="%E4%BA%AE%E7%82%B9">亮点</h4>
+<ol>
+<li>
+<p>使用 node 流和 JS 的 worker 功能，无阻塞高效执行色谱算法。</p>
+</li>
+<li>
+<p>没有使用数据库服务，纯靠文件的读写，避免服务端数据库I/O，而是在读取流的同时就进行数据运算，减少中间不必要的数据I/O。</p>
+</li>
+<li>
+<p>使用服务器提供 txt 文件数据序列化和分析结果以 xlsx 文件下载功能。这样的前后端模式可以非常方便的移植到 Electron 桌面端（node 进程和 chroimium 渲染进程）。</p>
+</li>
+</ol>
+<h2 id="%E9%A1%B9%E7%9B%AE%E7%A7%BB%E6%A4%8D">项目移植</h2>
+<ul>
+<li>
+<p><a href="https://github.com/qumuchegi/web-chromatography-analysis">web 端</a></p>
+</li>
+<li>
+<p><a href="">PC 端</a></p>
+</li>
+<li>
+<p><a href="">Android 端（React Native）</a></p>
+</li>
+</ul>
+<h2 id="%E8%AE%A1%E5%88%92%E6%96%B0%E5%A2%9E">计划新增</h2>
+<ul>
+<li><input type="checkbox" id="checkbox0"><label for="checkbox0">使用新的谱峰检测算法（移动标识谱峰方法）</label></li>
+<li><input type="checkbox" id="checkbox1" checked="true"><label for="checkbox1">新的软件架构：app 端接收用户上传的 txt 文件和用户选择的滤波和峰识别算法，后端接收到文件和用户选择的算法后，再使用 Node 的流读取文件并同时进行滤波和峰识别的处理，而不用中间生成 json 文件再进行滤波和峰识别</label></li>
+<li><input type="checkbox" id="checkbox2"><label for="checkbox2">在软件识别完峰后可以允许用户手动纠正识别结果，比如漏掉的峰可以添加，错判的峰可以去掉</label></li>
+<li><input type="checkbox" id="checkbox3"><label for="checkbox3">自动识别功能下，使用流模式处理算法后得到的峰别同条件下更少，需要检查一下流的对接这一步</label></li>
+</ul>
+
+</body>
+</html>
