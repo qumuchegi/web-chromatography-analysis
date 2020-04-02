@@ -9,6 +9,7 @@ app.use(express.urlencoded({ extended: false }));
 app.use(cors())
 
 app.use('/txtfile',require('./routes/txtfile'))
+app.use('/mannul-analyze',require('./routes/mannul-analyze'))
 app.use('/auto-analyze', require('./routes/auto-analyze'))
 
 const server = http.createServer(app)

@@ -9,7 +9,7 @@ module.exports = filter
 
 // 移动平均滤波
 function average_filter(yArr, win_filter){
-  console.log((win_filter-1)/2)
+  //console.log((win_filter-1)/2)
   let m=parseInt( (win_filter-1)/2 )//200 // 窗口大小为 2m+1, 如果窗口大小为20 那么 m=10,
   let i=0
   let {length} = yArr
@@ -42,9 +42,11 @@ function average_filter(yArr, win_filter){
 
 // 中值滤波
 function mid_filter(yArr, win_filter){
+  /*
   console.log({
     yArr, win_filter
   })
+  */
   let new_y = []
   let {length} = yArr
   let i = 0

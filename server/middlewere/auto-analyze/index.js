@@ -16,6 +16,10 @@ const peakIdent = require('./peak-ident')
 let total_rawData={
   xArr:[], yArr:[]
 }
+let total_filterData={
+  xArr:[],
+  yArr:[]
+}
 let rawData={
   xArr:[], yArr:[]
 }
@@ -34,7 +38,7 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
 
   console.log('初始peaks：',peaks)
 
-  let peakIdentMiddleWere = peakIdent_middlewere(peakIdentFun, peakIdentWin)
+  let peakIdentMiddleWere = peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin)
   readStream
   .pipe( filter_middlwere(filterFun, filterWin) )
   .pipe( peakIdentMiddleWere )
@@ -42,14 +46,18 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
   peakIdentMiddleWere.on('data',(chunk)=>{})
   peakIdentMiddleWere.on('end',()=>{
     console.log({peaks, total_rawData})
-    resCb(peaks, total_rawData)
+    console.log(testLength, total_filterData.yArr.length,total_rawData.yArr.length)
+    resCb(peaks, total_rawData, total_filterData.yArr)
     peaks=[]
     total_rawData.xArr = []
     total_rawData.yArr = []
+    total_filterData.yArr = []
+    total_filterData.xArr = []
     rawData.xArr = []
     rawData.yArr = []
     filterData.xArr = []
     filterData.yArr = []
+    testLength=0
   })
 }
 
@@ -61,7 +69,6 @@ const filter_middlwere = (filterFun, win) => new Transform({
     lines.forEach(
       line=>{
         let [x,y] = line.split(/[\t\s]+/)
-        //console.log(t,v)
         xArr.push(x)
         yArr.push(y)
       }
@@ -69,14 +76,28 @@ const filter_middlwere = (filterFun, win) => new Transform({
     rawData.xArr.push( ...xArr )
     rawData.yArr.push( ...yArr )
 
-    total_rawData.xArr.push( ...xArr )
-    total_rawData.yArr.push( ...yArr )
-
     if( rawData.yArr.length > win*10 ){
-      //console.log('滤波:', rawData)
       filterData.xArr.push( ...rawData.xArr )
-      filterData.yArr.push(  ...filterFun(rawData.yArr, win) )
+      /**
+       * 滤波会出现断层,所以最后会出现识别到的峰数量减少的情况
+       * 所以需要结合之前的原始数据来滤波
+       */
+      if(total_rawData.yArr.length > win){
+        let tmp_rawData_yArr=total_rawData.yArr.slice(-win).concat(rawData.yArr)
+        let filtered = filterFun(tmp_rawData_yArr, win)
+        filterData.yArr.push(  ...filtered.slice(win) )
+        //total_filterData.yArr.push(  ...filtered.slice(win) )
+      }else{
+        let filtered = filterFun(rawData.yArr, win)
+        filterData.yArr.push(  ...filtered)
+        //total_filterData.yArr.push(  ...filtered )
+      }
+      console.log('滤波出去的',{filterDataLength: filterData.yArr.length})
       this.push( JSON.stringify(filterData) )
+      //total_filterData.yArr.push(  ...filterData.yArr)
+      //total_filterData.xArr.push(  ...filterData.xArr)
+      total_rawData.xArr.push( ...rawData.xArr )
+      total_rawData.yArr.push( ...rawData.yArr )
       rawData.xArr = []
       rawData.yArr = []
       filterData.xArr = []
@@ -86,17 +107,52 @@ const filter_middlwere = (filterFun, win) => new Transform({
   }
 })
 
-function peakIdent_middlewere(peakIdentFun, peakIdentWin){
+var _xArr=[],_yArr=[],testLength = 0
+const isAuto=true
+let not_complete_peaks_points={
+  startPoint_time:0,
+  startPoint_voltage:0,
+  leftInflection_time:0,
+  leftInflection_voltage:0,
+  retention_time:0,
+  heighestPoint_voltage:0,
+  rightInflection_time:0,
+  rightInflection_voltage:0,
+  endPoint_time:0,
+  endPoint_voltage:0
+}
+function peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin){
   let transform =  new Transform({
     transform(chunk, encoding,cb){
-      let _xArr=[],_yArr=[]
       let {xArr, yArr} = JSON.parse( chunk.toString() )
       _xArr.push(...xArr)
       _yArr.push(...yArr)
-      if(_xArr.length > peakIdentWin){
-        peaks.push( ...peakIdentFun(_xArr, _yArr,  peakIdentWin) )
-        //peaks=[...new Set(peaks)]
+      console.log(
+        '峰识别：',
+        {
+        _yArrLength: _yArr.length,
+        yArrLength: yArr.length
+        })
+
+      testLength+=yArr.length
+
+      if(_yArr.length > peakIdentWin){
+        //console.log(_yArr.length)
+        /*if(total_filterData.yArr.length> peakIdentWin*4){
+          _yArr = total_filterData.yArr.slice(-peakIdentWin*4).concat(_yArr)
+          _xArr = total_filterData.xArr.slice(-peakIdentWin*4).concat(_xArr)
+        }*/
+        //console.log(_yArr.length)
+        let peakIdentRes = peakIdentFun(_xArr, _yArr,  peakIdentWin,isAuto,not_complete_peaks_points)
+        let peaks_win = peakIdentRes.peaks
+        not_complete_peaks_points= peakIdentRes.notComplete_peakPoints
+        console.log({not_complete_peaks_points})
+        peaks.push( ...peaks_win )
+        _xArr=[]
+        _yArr=[]
       }
+      total_filterData.yArr.push(  ...yArr)
+      total_filterData.xArr.push(  ...xArr)
       cb()
     }
   })

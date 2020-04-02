@@ -43,9 +43,9 @@ export default function(){
           retention_time: Number(peak.state.retention_time).toFixed(6),
           startPoint_time: Number(peak.state.startPoint_time).toFixed(6),
           endPoint_time: Number(peak.state.endPoint_time).toFixed(6),
-          heighestPoint_voltage: peak.state.heighestPoint_voltage.toFixed(3),
+          heighestPoint_voltage:  Number(peak.state.heighestPoint_voltage).toFixed(3),
           areaPeak: peak.state.areaPeak,
-          ratio: `${(100*peak.state.areaPeak/allPeaksArea).toFixed(2)} %`
+          ratio: `${(100*Number(peak.state.areaPeak)/allPeaksArea).toFixed(2)} %`
         })
       } )
       setRows(rows)

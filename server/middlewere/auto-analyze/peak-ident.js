@@ -1,7 +1,12 @@
+const fs=require('fs')
+process.stdout.pipe(fs.createWriteStream('server/log.txt'))
+
 const peakIdent = module.exports = {
   一阶导数法: peak_ident1
 }
 module.exports = peakIdent
+
+
 let featurePoints = [] // 线程要返回的峰的列表
 
 class FeaturePointOfPeak{ // 一个峰的特征点
@@ -50,7 +55,10 @@ let areaTotal = 0
  * @param {峰识别窗口大小} win_peakIdent 
  * return 识别到的峰数组
  */
-function peak_ident1(xArr, yArr,  win_peakIdent){
+function peak_ident1(xArr, yArr,  win_peakIdent,isAuto=false,not_complete_peakPoints={}){
+  // isAuto 为 true，那么需要保留当一个峰没有识别完时的起点、顶点、拐点，因为在峰识别中只有识别到终点才会保存峰
+  // 如果 isAuto = true，即采用自动方法的流式处理方式，把原始谱图分成多个部分来识别峰，就需要为每一部分没有识别完的峰暂存特殊点
+  // 为下一次识别保留这些特殊点
   // 清空之前文件分析得到的结果
   featurePoints=[]
   //console.log({xArr, yArr, win_peakIdent})
@@ -59,6 +67,35 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
 
   let win_d = [] // 窗口内一阶导, 这里放在全局变量，可以复用中间的导数
   let flag_peak = 0
+  /**
+   * 在 auto 流模式下，需要在没有识别完的峰的基础上，继续使用识别到的终点之前的特殊点，在最后一个特殊点之后寻找下一个特殊点
+   * 具体方式是根据最后一个特殊点来赋值 flag_peak，用于定位特殊点识别起点
+   */
+  if(isAuto){
+    let {
+      startPoint_time,
+      startPoint_voltage,
+      leftInflection_time,
+      leftInflection_voltage,
+      retention_time,
+      heighestPoint_voltage,
+      rightInflection_time,
+      rightInflection_voltage,
+      endPoint_time,
+      endPoint_voltage
+    } = not_complete_peakPoints
+    if(startPoint_time===0){
+      flag_peak=0
+    }else if(leftInflection_time===0){
+      flag_peak=1
+    }else if(retention_time===0){
+      flag_peak=2
+    }else if(rightInflection_time===0){
+      flag_peak=3
+    }else if(endPoint_time===0){
+      flag_peak=4
+    }
+  }
 
   while(i<total_l-n){
     let win_y = yArr.slice(i,i+n).map(y => Number(y))
@@ -175,24 +212,6 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
     // 为判断起点设置的额外条件
     let extrat_Start_condition = (!win_d[parseInt(n/2-1)]<n_dPT || !win_d[parseInt(n/2)]<n_dPT)  
 
-    /*
-    console.log(
-      {
-        win_y,
-        win_d,
-        extrat_Start_condition,
-        pk_up, pk_down, pk_dUp, pk_dDown,
-        isY_up,isY_down,isD_up,isD_down
-      },
-      flag_peak,
-      win_x[0],
-      isY_up?'y 上升':null,
-      isD_up?'D 上升':null,
-      isY_down?'y 下降':null,
-      isD_down?'D 下降':null,
-    )
-    */
-
     // flag_peak===4 代表刚刚识别完右拐点
     if(flag_peak===4){
       areaTotal+=win_y[0]*0.000833
@@ -204,7 +223,8 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
           endPoint_voltage=win_y[0]
           // 计算峰面积
           // 峰里的梯形面积
-          let areaPeakLadder = Math.abs(endPoint_voltage-startPoint_voltage)*(endPoint_time-startPoint_time)/2
+                  // 峰里的梯形面积,经过修改改为矩形，取起点和终点中最小的为矩形的高，矩形宽为起点和终点时间差
+          let areaPeakLadder = Math.min(endPoint_voltage, startPoint_voltage)*(endPoint_time-startPoint_time)
           console.log('计算峰面积：',{areaTotal, areaPeakLadder})
           areaPeak = (areaTotal - areaPeakLadder).toFixed(3)
           featurePoints.push(
@@ -235,6 +255,7 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
           endPoint_voltage=0 // 右拐点时间和电压
           areaPeak=0 // 面积
           flag_peak=0
+          areaTotal=0
         }
          // 谷点，d_0<d_1<....<d_n-1
          // s\上面这个条件也太不符合了吧
@@ -310,7 +331,7 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
       // h_0<h_1....<h_n-1
       if( 
         isY_up 
-        //&& extrat_Start_condition 
+        && extrat_Start_condition 
         //&& isD_up
       ){
         flag_peak=1
@@ -322,7 +343,19 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
       continue
     }
   }
-  return featurePoints
+  return {
+    peaks: featurePoints,
+    notComplete_peakPoints:{
+      startPoint_time,
+      startPoint_voltage,
+      leftInflection_time,
+      leftInflection_voltage,
+      retention_time,
+      heighestPoint_voltage,
+      rightInflection_time,
+      rightInflection_voltage,
+      endPoint_time,
+      endPoint_voltage
+    }
+  }
 }  
-
-

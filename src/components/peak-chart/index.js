@@ -134,18 +134,18 @@ function Chart(props){
           value:i+'峰起点',
           coord:[`${Number(peak.state.startPoint_time).toFixed(6)}`, peak.state.startPoint_voltage]
         },
-        {
+        /*{
           value:i+'左拐点',
           coord:[`${Number(peak.state.leftInflection_time).toFixed(6)}`, peak.state.leftInflection_voltage]
-        },
+        },*/
         {
           value:i+'顶点',
           coord:[`${Number(peak.state.retention_time).toFixed(6)}`, peak.state.heighestPoint_voltage]
         },
-        {
+        /*{
           value:i+'右拐点',
           coord:[`${Number(peak.state.rightInflection_time).toFixed(6)}`, peak.state.rightInflection_voltage]
-        },
+        },*/
         {
           value:i+'终点',
           coord:[`${Number(peak.state.endPoint_time).toFixed(6)}`, peak.state.endPoint_voltage]

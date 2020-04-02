@@ -4,7 +4,7 @@
 
  // 子线程
 onmessage=function(e){
-  console.log(e)
+ console.log(e)
  let [yArr, win_filter, filterType] = e.data
  console.log(yArr, win_filter,filterType)
  postMessage(filter[filterType](yArr, win_filter))

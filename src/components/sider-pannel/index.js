@@ -39,8 +39,7 @@ const filter_type = {
   multi: '多项式滤波',
 }
 const peakIdent_type = {
-  first: '一阶导数法',
-  mark: '移动标识法'
+  first: '一阶导数法'
 }
 
 const useStyles = makeStyles(theme => ({
@@ -59,7 +58,7 @@ const useStyles = makeStyles(theme => ({
   },
 }))
 
-function getSteps(win_filter, win_peakIdent, filterType,m) {
+function getSteps(win_filter, win_peakIdent, filterType,m,peakIdentType) {
   return [
     <div>
       <h4>导入色谱数据</h4><span className='strong-span'>txt 文件格式</span></div>, 
@@ -78,7 +77,7 @@ function getSteps(win_filter, win_peakIdent, filterType,m) {
     </div>, 
     <div>
       <h4>峰识别和定性定量计算</h4>
-      <div className='strong-div'>一阶导峰检测窗口大小
+      <div className='strong-div'>{peakIdentType}峰检测窗口大小
         <span className='strong-span'>{win_peakIdent}</span>
       </div>
     </div>
@@ -88,11 +87,12 @@ function getSteps(win_filter, win_peakIdent, filterType,m) {
 function getStepContent(stepIndex,{
   onFileChange, 
   filterType,
+  peakIdentType,
   m,
   onSelectFilterType,
+  onSelectPeakIdentType,
   filter, 
   peakIdent, 
-  buttonHadClicked, 
   onWinFilterChange, 
   onWinPeakIdentChange
 }) {
@@ -133,14 +133,22 @@ function getStepContent(stepIndex,{
           <TextField onChange={onWinFilterChange} size='small' id="outlined-basic"  variant="outlined" label="设置滤波窗口大小" />
         }
        
-        <Button onClick={filter} color="secondary" variant="outlined" disabled={buttonHadClicked}>
+        <Button onClick={filter} color="secondary" variant="outlined">
           滤波
         </Button>
       </>;
     case 2:
       return <>
         <TextField onChange={onWinPeakIdentChange} size='small' variant="outlined"   label="设置检峰窗口大小"/>
-        <Button onClick={peakIdent} color="primary" variant="outlined" disabled={buttonHadClicked}>
+        <Select
+          labelId="demo-simple-select-label"
+          id="demo-simple-select"
+          value={peakIdentType}
+          onChange={onSelectPeakIdentType}
+        >
+          <MenuItem value={peakIdent_type.first}>{peakIdent_type.first}</MenuItem>
+        </Select>
+        <Button onClick={peakIdent} color="primary" variant="outlined">
           峰检测和定性定量计算
         </Button>
       </>;
@@ -156,9 +164,9 @@ export default function(){
   const [win_filter, setWin_filter] = React.useState(0)
   const [win_peakIdent, setWin_peakIdent] = React.useState(0)
   const [m, setM] = React.useState(2)
-  const [buttonHadClicked, setButtonHadClicked] = React.useState(false)
   const [filterType, setFilterType] = React.useState(filter_type.average)
   const [peakIdentType, setPeakIdentType] = React.useState(peakIdent_type.first)
+  const [showLoading, setShowLoading] = React.useState(false)
 
   React.useEffect(() => {
     const mode={
@@ -199,7 +207,7 @@ export default function(){
     }
   }, [])
 
-  const steps = getSteps(win_filter, win_peakIdent,filterType,m)
+  const steps = getSteps(win_filter, win_peakIdent,filterType,m.peakIdentType)
 
   const next = () => {
     setActiveStep(prevActiveStep => prevActiveStep + 1)
@@ -223,6 +231,7 @@ export default function(){
     let file = e.target.files[0]
     if(!file) return
     setFilename(file.name)
+    setShowLoading(true)
     let formData = new FormData()
     formData.append('txtfilename', file.name)
     formData.append('txtfile', file)
@@ -233,10 +242,12 @@ export default function(){
     formData.append('peakIdentType', peakIdentType)
 
     let res = await api.post('/auto-analyze', formData)
-    let {peaks, rawData} = res
+    let {peaks, rawData, filteredYarr} = res
 
     let {xArr:times, yArr:values} = rawData
+    setShowLoading(false)
     dispatch( upgradeOriginData(file.name, times, values) )
+    dispatch( savefilteredData(filteredYarr) )
     dispatch( savePeakIdentData(peaks) )
   }
 
@@ -267,35 +278,34 @@ export default function(){
     if(
       !win_filter && filterType!==filter_type.multi
     ) return alert('请输入滤波窗口大小')
-    setButtonHadClicked(true)
+    setShowLoading(true)
     let yArr = getState().dataReducer.data_origin.values
     //average_filter(yData)
     let filter_worker = new Worker(average_filter_worker_url)
-    console.log('滤波前原始数据：', yArr)
     
     filter_worker.postMessage([yArr, filterType===filter_type.multi ? m:win_filter, filterType])
     filter_worker.onmessage=data=>{
       console.log('滤波线程返回：', data.data)
       dispatch( savefilteredData(data.data) )
       yArr=null
-      setButtonHadClicked(false)
+      setShowLoading(false)
       next()
     }
   }
 
   const peakIdent = () => {
     if(!win_peakIdent && filterType!==filter_type.multi) return alert('请输入峰检测窗口大小')
-    setButtonHadClicked(true)
+    setShowLoading(true)
     let peak_worker = new Worker(peak_ident_worker_url)
     let times = getState().dataReducer.data_origin.times
     let values_filtered = getState().dataReducer.data_filtered
-    peak_worker.postMessage([times, values_filtered, win_peakIdent])
+    peak_worker.postMessage([times, values_filtered, win_peakIdent,peakIdentType])
     peak_worker.onmessage=(data)=>{
       console.log('子线程返回检测到的峰:',data.data)
       dispatch( savePeakIdentData(data.data) )
       times=null
       values_filtered=null
-      setButtonHadClicked(false)
+      setShowLoading(false)
       next()
     }
   }
@@ -312,6 +322,15 @@ export default function(){
 
   return(
     <div id='sider'>
+      <div id='loading' className={showLoading?'show-loading':'hide-loading'}>
+        <div>
+          <svg width="260" height="240">
+            <circle  stroke-width='4' cx='40' cy='70' id='out-1'/>
+            <circle   stroke-width='4' cx='220' cy='70' id='out-3'/>
+          </svg>
+          <h2 style={{textAlign:'center',color:'#868'}}>正在计算中...</h2>
+        </div>
+      </div>
       <div id='operation-mode-pannel'>
         <h4>是否自动分析</h4>
         <svg width="60" height="40" id='switch'>
@@ -320,6 +339,7 @@ export default function(){
         </svg>
       </div>
       <div className='auto-pannel hide-pannel'>
+        <h3 style={{padding:'0px 10px',color:'#666'}}>自动模式</h3>
         <div>
           <div id='auto-pannel-set-form'>
             <FormControl component="fieldset">
@@ -337,7 +357,6 @@ export default function(){
               <FormLabel component="legend">选择峰识别方法</FormLabel>
               <RadioGroup aria-label="gender" name="gender1" value={peakIdentType} onChange={onSelectPeakIdentType}>
                 <FormControlLabel value={peakIdent_type.first} control={<Radio />} label={peakIdent_type.first} />
-                <FormControlLabel value={peakIdent_type.mark} control={<Radio />} label={peakIdent_type.mark} />
               </RadioGroup>
             </FormControl>
             <FormControl component="fieldset">
@@ -349,10 +368,11 @@ export default function(){
             <img src={jsonFile} alt='上传' style={{width: '20px', display:'block'}}></img>
             导入数据（txt）即可开始分析
           </label>
-          <input type='file' id='file-1' style={{display:'none'}} onChange={autoAnalyze}/>
+          <input type='file' id='file-1' style={{display:'none'}} onInput={autoAnalyze}/>
         </div>
       </div>
       <div className='mannul-pannel show-pannel'>
+        <h3 style={{padding:'0px 10px',color:'#616'}}>手动模式</h3>
         <Stepper activeStep={activeStep}  orientation="vertical">
           {steps.map(label => (
             <Step key={label}>
@@ -368,16 +388,16 @@ export default function(){
             </div>
           ) : (
             <div className="mannul-step-button">
-              {buttonHadClicked?<div><img src={loadingIcon} alt='' id="loading-icon"/></div>:null}
-              {getStepContent(activeStep,
+               {getStepContent(activeStep,
                 {
                   onFileChange, 
                   filterType,
+                  peakIdentType,
                   m,
                   onSelectFilterType,
+                  onSelectPeakIdentType,
                   filter, 
                   peakIdent, 
-                  buttonHadClicked, 
                   onWinFilterChange, 
                   onWinPeakIdentChange
                 })}
