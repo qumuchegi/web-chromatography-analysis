@@ -2,6 +2,7 @@
   display: flex;
   justify-content: space-between;
   margin-top: 10px;
+  background-color: white;
 }
 #result-body>div:first-child{
   flex:4

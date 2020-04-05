@@ -58,6 +58,8 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
     filterData.xArr = []
     filterData.yArr = []
     testLength=0
+    not_complete_peaks_points={}
+
   })
 }
 
@@ -109,7 +111,7 @@ const filter_middlwere = (filterFun, win) => new Transform({
 
 var _xArr=[],_yArr=[],testLength = 0
 const isAuto=true
-let not_complete_peaks_points={
+var not_complete_peaks_points={
   startPoint_time:0,
   startPoint_voltage:0,
   leftInflection_time:0,
@@ -137,12 +139,6 @@ function peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin){
       testLength+=yArr.length
 
       if(_yArr.length > peakIdentWin){
-        //console.log(_yArr.length)
-        /*if(total_filterData.yArr.length> peakIdentWin*4){
-          _yArr = total_filterData.yArr.slice(-peakIdentWin*4).concat(_yArr)
-          _xArr = total_filterData.xArr.slice(-peakIdentWin*4).concat(_xArr)
-        }*/
-        //console.log(_yArr.length)
         let peakIdentRes = peakIdentFun(_xArr, _yArr,  peakIdentWin,isAuto,not_complete_peaks_points)
         let peaks_win = peakIdentRes.peaks
         not_complete_peaks_points= peakIdentRes.notComplete_peakPoints

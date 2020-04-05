@@ -108,7 +108,7 @@ export default function(){
             style={{width:"13px"}} 
             alt=''/>}
           >
-            保存分析结果(xlsx)
+            保存表格(xlsx)
       </Button>
     </div>
   </div>

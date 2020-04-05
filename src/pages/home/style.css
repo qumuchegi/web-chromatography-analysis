@@ -1,6 +1,8 @@
 #home-page{
   display: flex;
+  padding: 10px;
   justify-content: start;
+  background-color: #eee;
 }
 #sider-container{
   flex:1;
@@ -9,6 +11,7 @@
   flex:3;
 }
 #prj-description{
+  background-color: white;
   border-bottom: solid 2px #263;
   padding-top: 0px;
   padding-left: 10px;

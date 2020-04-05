@@ -77,8 +77,9 @@ function getSteps(win_filter, win_peakIdent, filterType,m,peakIdentType) {
     </div>, 
     <div>
       <h4>峰识别和定性定量计算</h4>
-      <div className='strong-div'>{peakIdentType}峰检测窗口大小
-        <span className='strong-span'>{win_peakIdent}</span>
+      <div className='strong-div'>
+        <div>{peakIdentType}</div>
+        <div>峰检测窗口大小 <span className='strong-span'>{win_peakIdent}</span></div>
       </div>
     </div>
   ]
@@ -207,7 +208,7 @@ export default function(){
     }
   }, [])
 
-  const steps = getSteps(win_filter, win_peakIdent,filterType,m.peakIdentType)
+  const steps = getSteps(win_filter, win_peakIdent,filterType,m,peakIdentType)
 
   const next = () => {
     setActiveStep(prevActiveStep => prevActiveStep + 1)
@@ -227,6 +228,7 @@ export default function(){
   }
 
   const autoAnalyze = async(e) => {
+    if(!win_filter||!win_peakIdent) return alert('请输入滤波和峰识别窗口大小')
     e.persist()
     let file = e.target.files[0]
     if(!file) return
@@ -373,7 +375,7 @@ export default function(){
       </div>
       <div className='mannul-pannel show-pannel'>
         <h3 style={{padding:'0px 10px',color:'#616'}}>手动模式</h3>
-        <Stepper activeStep={activeStep}  orientation="vertical">
+        <Stepper activeStep={activeStep}  orientation="vertical" style={{backgroundColor:'#eee'}}>
           {steps.map(label => (
             <Step key={label}>
               <StepLabel>{label}</StepLabel>

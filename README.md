@@ -34,9 +34,7 @@ git clone 本仓库到本地后：
 
 - [web 端](https://github.com/qumuchegi/web-chromatography-analysis)
 
-- [PC 端（Electron）]()
-
-- [Android 端（React Native）]()
+- [Android 端（React Native）](https://github.com/qumuchegi/RN_chromatography_software)
 
 ## 计划新增
 

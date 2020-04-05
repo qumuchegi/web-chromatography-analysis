@@ -22,8 +22,11 @@ export default function(){
             <img src={githubIcon} alt='' style={{width: '40px'}}/>
           </a>
         </div>
-        <div>
-          <h4>东南大学仪科学院·毕设项目</h4>
+        <div style={{display:'flex',justifyContent:'flex-start',alignItems:'center'}}>
+          <h2>色谱分析软件（web）</h2>
+          <div>
+            <h4>东南大学仪科学院·毕设项目</h4>
+          </div>
         </div>
         <div id='prj-extensions-link'>
           <div>
