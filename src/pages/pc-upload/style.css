@@ -1,0 +1,40 @@
+#upload-body #page-header{
+  background-color: white;
+  padding: 30px;
+}
+#label{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+  width: 200px;
+  height: 50px;
+  margin: auto;
+  background-color: rgb(66, 219, 224);
+  border-radius: 5px;
+}
+#label:hover{
+  background-color: rgb(97, 209, 212);
+}
+#input-file{
+  display: none;
+}
+#success-read-file{
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+#buttons{
+  display: flex;
+  justify-content: space-around;
+}
+#cancel-button, #upload-button{
+  background-color: rgb(97, 209, 212);
+  color: white;
+  margin: 50px;
+  padding: 10px;
+}
+#cancel-button:hover, #upload-button:hover{
+  cursor: pointer;
+}

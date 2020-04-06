@@ -5,6 +5,8 @@ const cors = require('cors')
 const fs = require('fs')
 const bodyParser = require('body-parser')
 
+const upload = require('./middlewere/file-upgrade')
+
 app.use(bodyParser.json({limit : '2100000kb'})); // 请求体大小限制 2 M
 app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
@@ -18,6 +20,14 @@ app.use('/txtfile',require('./routes/txtfile'))
 app.use('/mannul-analyze',require('./routes/mannul-analyze'))
 app.use('/auto-analyze', require('./routes/auto-analyze'))
 
+/**
+ * 以下API专门针对移动端
+ */
+app.post('/pc-upload',upload('server/assets/').any(),(req,res,next)=>{
+  res.json({
+    data:{code:0}
+  })
+})
 app.use('/server-render-chart', require('./routes/server-render-chart'))
 
 app.get('/read-assets-dir',(req,res,next)=>{
