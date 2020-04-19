@@ -284,8 +284,9 @@ export default function(){
     let yArr = getState().dataReducer.data_origin.values
     //average_filter(yData)
     let filter_worker = new Worker(average_filter_worker_url)
-    
+    // 调起woker线程，向其传入色谱数据和滤波的类型和窗口大小
     filter_worker.postMessage([yArr, filterType===filter_type.multi ? m:win_filter, filterType])
+    // worker线程返回滤波结果
     filter_worker.onmessage=data=>{
       console.log('滤波线程返回：', data.data)
       dispatch( savefilteredData(data.data) )

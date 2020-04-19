@@ -19,7 +19,29 @@ app.use(cors())
 app.use('/txtfile',require('./routes/txtfile'))
 app.use('/mannul-analyze',require('./routes/mannul-analyze'))
 app.use('/auto-analyze', require('./routes/auto-analyze'))
-
+app.get('/prj-intro-dir', (req, res)=>{
+  let arr=[]
+  let dirs = fs.readdirSync('server/project-intro')
+  dirs.forEach(dir=>{
+    arr.push({[dir]: fs.readdirSync('server/project-intro/'+dir)})
+  })
+  console.log(arr)
+  res.json({
+    code:0,
+    data: {
+      introDir: arr
+    }
+  })
+})
+app.get('/prj-intro-file', (req, res, next)=>{
+  let {introDir, introJsonFileName} = req.query
+  res.json({
+    code: 0,
+    data: {
+      jsonFileContent: fs.readFileSync('server/project-intro/'+introDir+'/'+introJsonFileName,'utf-8')
+    }
+  })
+})
 /**
  * 以下API专门针对移动端
  */
@@ -41,6 +63,7 @@ app.get('/read-assets-file',(req,res,next)=>{
     fileBlob: fs.readFileSync('server/assets/'+filename)
   }})
 })
+
 
 const server = http.createServer(app)
 server.listen(3001,()=> console.log('服务启动...'))

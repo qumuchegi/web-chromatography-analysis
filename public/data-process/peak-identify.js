@@ -11,7 +11,6 @@ onmessage = function(e){
 }
 const peakIdent={
   '一阶导数法': peak_ident1,
-  '移动标识法': peak_ident2
 }
 let featurePoints = [] // 线程要返回的峰的列表
 
@@ -177,24 +176,6 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
     // 为判断起点设置的额外条件
     let extrat_Start_condition = (!win_d[parseInt(n/2-1)]<n_dPT || !win_d[parseInt(n/2)]<n_dPT)  
 
-    /*
-    console.log(
-      {
-        win_y,
-        win_d,
-        extrat_Start_condition,
-        pk_up, pk_down, pk_dUp, pk_dDown,
-        isY_up,isY_down,isD_up,isD_down
-      },
-      flag_peak,
-      win_x[0],
-      isY_up?'y 上升':null,
-      isD_up?'D 上升':null,
-      isY_down?'y 下降':null,
-      isD_down?'D 下降':null,
-    )
-    */
-
     // flag_peak===4 代表刚刚识别完右拐点
     if(flag_peak===4){
       areaTotal+=win_y[0]*0.000833
@@ -284,10 +265,6 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
         heighestPoint_voltage=win_y[0]
         flag_peak=3
       }
-      else if(isY_down){
-        flag_peak=0
-        areaTotal=0
-      }
       i++
       continue
     }
@@ -327,103 +304,3 @@ function peak_ident1(xArr, yArr,  win_peakIdent){
   }
   return featurePoints
 }  
-
-function  peak_ident2(xArr, yArr, peakIdentWin){
-  // 清空之前文件分析得到的结果
-  featurePoints=[]
-  let remainder_map = new Map([
-    ['01234','U'], //上升
-    ['43210','D'], //下降
-    ['04040','N'], //噪声
-    ['00440','N'], //噪声
-    ['02420','A'], //峰顶
-    ['43220','X'], //凸形
-    ['00124','Y']  //凹形
-  ])
-  let mark_arr=[]
-  let i=0
-  let {length: total_length} = xArr
-  while(i+5<total_length){
-    let win_y = yArr.slice(i, i+5)
-    let max = Math.max(...win_y)
-    let min = Math.min(...win_y)
-    let remainder_str=''
-    for(let idx=0; idx<5; idx++){
-      remainder_str += (parseInt(4*(win_y[idx]-min)/(max-min)) % 5)
-    }
-    //console.log(remainder_str)
-    mark_arr.push(remainder_map.get(remainder_str))
-    i++
-  }
-  // 下面开始判断特征点
-  i=0
-  let markLength = mark_arr.length
-  let flag_peak = 0
-  while(i+peakIdentWin<markLength){
-    let marks_in_win = mark_arr.slice(i,i+peakIdentWin)
-    if( flag_peak===0){
-      if(marks_in_win.every(mark=> mark==='U')){ // 起点
-        flag_peak = 1 
-        startPoint_time = xArr[i]
-        startPoint_voltage = yArr[i]
-      }
-      areaTotal += Number(yArr[i])*0.000833
-    }
-    else if( flag_peak===1){
-      if(marks_in_win.every(mark=>mark==='D')){ // 顶点
-        flag_peak=2
-        retention_time=xArr[i]
-        heighestPoint_voltage=yArr[i]
-      }
-      areaTotal += Number(yArr[i])*0.000833
-    }
-    else if( flag_peak===2){
-      if(marks_in_win.some(mark=>mark==='U')){ // 终点
-        flag_peak=0 
-        endPoint_time=xArr[i]
-        endPoint_voltage=yArr[i]
-        // 计算峰面积
-        // 峰里的梯形面积
-        let areaPeakLadder = ((endPoint_voltage+startPoint_voltage)*(endPoint_time-startPoint_time))/2
-        console.log('计算峰面积：',{areaTotal, areaPeakLadder})
-        areaPeak = (areaTotal - areaPeakLadder).toFixed(3)
-
-        featurePoints.push(
-          new FeaturePointOfPeak({
-            startPoint_time, startPoint_voltage, // 起点时间和电压
-            retention_time, heighestPoint_voltage, // 保留时间和顶点电压,
-            //valleyPoint_time, valleyPoint_voltage, // 古点时间和电压
-            //baselinePoint_voltage, //基线电压
-            //leftInflection_time, leftInflection_voltage, // 左拐点时间和电压
-            //rightInflection_time, rightInflection_voltage, // 左拐点时间和电压
-            endPoint_time, endPoint_voltage, // 右拐点时间和电压
-            areaPeak // 面积
-          })
-        )
-        // 重置所有变量，为识别下一个峰做准备
-        startPoint_time=0
-        startPoint_voltage=0 // 起点时间和电压
-        retention_time=0
-        heighestPoint_voltage=0 // 保留时间和顶点电压,
-        valleyPoint_time=0
-        valleyPoint_voltage=0// 古点时间和电压
-        baselinePoint_voltage=0//基线电压
-        leftInflection_time=0
-        leftInflection_voltage=0 // 左拐点时间和电压
-        rightInflection_time=0 
-        rightInflection_voltage=0 // 左拐点时间和电压
-        endPoint_time=0
-        endPoint_voltage=0 // 右拐点时间和电压
-        areaPeak=0 // 面积
-        areaTotal=0
-      }
-      areaTotal += Number(yArr[i])*0.000833  
-    }
-      //flag_peak=0
-      //areaTotal=0
-    i++
-  }
-  
-  return featurePoints
-}
-
