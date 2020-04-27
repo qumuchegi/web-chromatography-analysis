@@ -6,7 +6,11 @@ router.post('/', upload('server/files/').any(), (req, res, next)=>{
   let {txtfilename, filterWin, filterType, peakIdentWin, peakIdentType}= req.body
   console.log({txtfilename, filterWin, filterType, peakIdentWin, peakIdentType})
   autoAnalyze(
-    txtfilename, parseInt(filterWin), filterType, parseInt(peakIdentWin), peakIdentType, 
+    txtfilename,
+    parseInt(filterWin),
+    filterType,
+    parseInt(peakIdentWin),
+    peakIdentType,
     function(peaks, rawData, filteredYarr){
       res.json({code:0, data:{
         peaks, rawData, filteredYarr

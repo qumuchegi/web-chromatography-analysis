@@ -28,6 +28,7 @@ let filterData={
 }
 
 let peaks = []
+let isEnd  = false
 
 const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdentType, resCb) => {
   let dirname = 'server/files'
@@ -36,17 +37,15 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
   let filterFun = filter[filterType]
   let peakIdentFun = peakIdent[peakIdentType]
 
-  console.log('初始peaks：',peaks)
-
-  let peakIdentMiddleWere = peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin)
+  let peakIdentMiddleWere = peakIdent_middlewere(peakIdentFun, peakIdentWin)
+  
   readStream
   .pipe( filter_middlwere(filterFun, filterWin) )
   .pipe( peakIdentMiddleWere )
-  
-  peakIdentMiddleWere.on('data',(chunk)=>{})
-  peakIdentMiddleWere.on('end',()=>{
+
+  readStream.on('data',(chunk)=>{})
+  readStream.on('end',()=>{
     console.log({peaks, total_rawData})
-    console.log(testLength, total_filterData.yArr.length,total_rawData.yArr.length)
     resCb(peaks, total_rawData, total_filterData.yArr)
     peaks=[]
     total_rawData.xArr = []
@@ -59,7 +58,6 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
     filterData.yArr = []
     testLength=0
     not_complete_peaks_points={}
-
   })
 }
 
@@ -67,8 +65,9 @@ const filter_middlwere = (filterFun, win) => new Transform({
   transform(chunk, encoding,cb){
     let matchLine = /\d*\.\d{6}[\t\s]+\d*\.\d{3}/g
     let lines = chunk.toString().match(matchLine)
+    //console.log({lines})
     let xArr=[], yArr=[]
-    lines.forEach(
+    lines && lines.forEach(
       line=>{
         let [x,y] = line.split(/[\t\s]+/)
         xArr.push(x)
@@ -77,15 +76,16 @@ const filter_middlwere = (filterFun, win) => new Transform({
     )
     rawData.xArr.push( ...xArr )
     rawData.yArr.push( ...yArr )
-
-    if( rawData.yArr.length > win*10 ){
+    
+    // rawData.yArr.length > win*10
+    if( true ){
       filterData.xArr.push( ...rawData.xArr )
       /**
        * 滤波会出现断层,所以最后会出现识别到的峰数量减少的情况
        * 所以需要结合之前的原始数据来滤波
        */
       if(total_rawData.yArr.length > win){
-        let tmp_rawData_yArr=total_rawData.yArr.slice(-win).concat(rawData.yArr)
+        let tmp_rawData_yArr = total_rawData.yArr.slice(-win).concat(rawData.yArr)
         let filtered = filterFun(tmp_rawData_yArr, win)
         filterData.yArr.push(  ...filtered.slice(win) )
         //total_filterData.yArr.push(  ...filtered.slice(win) )
@@ -94,12 +94,12 @@ const filter_middlwere = (filterFun, win) => new Transform({
         filterData.yArr.push(  ...filtered)
         //total_filterData.yArr.push(  ...filtered )
       }
-      console.log('滤波出去的',{filterDataLength: filterData.yArr.length})
-      this.push( JSON.stringify(filterData) )
+      //console.log('滤波出去的',{filterDataLength: filterData.yArr.length})
       //total_filterData.yArr.push(  ...filterData.yArr)
       //total_filterData.xArr.push(  ...filterData.xArr)
       total_rawData.xArr.push( ...rawData.xArr )
       total_rawData.yArr.push( ...rawData.yArr )
+      this.push( JSON.stringify(filterData) )
       rawData.xArr = []
       rawData.yArr = []
       filterData.xArr = []
@@ -123,7 +123,7 @@ var not_complete_peaks_points={
   endPoint_time:0,
   endPoint_voltage:0
 }
-function peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin){
+function peakIdent_middlewere(peakIdentFun, peakIdentWin){
   let transform =  new Transform({
     transform(chunk, encoding,cb){
       let {xArr, yArr} = JSON.parse( chunk.toString() )
@@ -147,8 +147,9 @@ function peakIdent_middlewere(peakIdentFun, peakIdentWin, filterWin){
         _xArr=[]
         _yArr=[]
       }
-      total_filterData.yArr.push(  ...yArr)
-      total_filterData.xArr.push(  ...xArr)
+      total_filterData.yArr.push( ...yArr)
+      total_filterData.xArr.push( ...xArr)
+      console.log(testLength, total_filterData.yArr.length,total_rawData.yArr.length)
       cb()
     }
   })
