@@ -7,10 +7,8 @@ var storage = (destination)=> multer.diskStorage({
     }
   });
   var txtFilter = function (req, file, cb) {
-      // accept image files only
-      //console.log('中间件',file,'完')
       if (!file.originalname.match(/\.(txt)$/i)) {
-          return cb(new Error('Only txt files are allowed!'), false);
+        return cb(new Error('Only txt files are allowed!'), false);
       }
       cb(null, true);
   };

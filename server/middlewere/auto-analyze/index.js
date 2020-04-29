@@ -27,8 +27,7 @@ let filterData={
   xArr: [], yArr:[]
 }
 
-let peaks = []
-let isEnd  = false
+let peaks = [] // 全局变量，存储识别到的峰，返回给前端
 
 const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdentType, resCb) => {
   let dirname = 'server/files'
@@ -45,7 +44,7 @@ const autoAnalyze = (txtfilename, filterWin, filterType, peakIdentWin, peakIdent
 
   readStream.on('data',(chunk)=>{})
   readStream.on('end',()=>{
-    console.log({peaks, total_rawData})
+    //console.log({peaks, total_rawData})
     resCb(peaks, total_rawData, total_filterData.yArr)
     peaks=[]
     total_rawData.xArr = []
@@ -65,7 +64,6 @@ const filter_middlwere = (filterFun, win) => new Transform({
   transform(chunk, encoding,cb){
     let matchLine = /\d*\.\d{6}[\t\s]+\d*\.\d{3}/g
     let lines = chunk.toString().match(matchLine)
-    //console.log({lines})
     let xArr=[], yArr=[]
     lines && lines.forEach(
       line=>{
@@ -78,33 +76,26 @@ const filter_middlwere = (filterFun, win) => new Transform({
     rawData.yArr.push( ...yArr )
     
     // rawData.yArr.length > win*10
-    if( true ){
-      filterData.xArr.push( ...rawData.xArr )
-      /**
-       * 滤波会出现断层,所以最后会出现识别到的峰数量减少的情况
-       * 所以需要结合之前的原始数据来滤波
-       */
-      if(total_rawData.yArr.length > win){
-        let tmp_rawData_yArr = total_rawData.yArr.slice(-win).concat(rawData.yArr)
-        let filtered = filterFun(tmp_rawData_yArr, win)
-        filterData.yArr.push(  ...filtered.slice(win) )
-        //total_filterData.yArr.push(  ...filtered.slice(win) )
-      }else{
-        let filtered = filterFun(rawData.yArr, win)
-        filterData.yArr.push(  ...filtered)
-        //total_filterData.yArr.push(  ...filtered )
-      }
-      //console.log('滤波出去的',{filterDataLength: filterData.yArr.length})
-      //total_filterData.yArr.push(  ...filterData.yArr)
-      //total_filterData.xArr.push(  ...filterData.xArr)
-      total_rawData.xArr.push( ...rawData.xArr )
-      total_rawData.yArr.push( ...rawData.yArr )
-      this.push( JSON.stringify(filterData) )
-      rawData.xArr = []
-      rawData.yArr = []
-      filterData.xArr = []
-      filterData.yArr = []
+    filterData.xArr.push( ...rawData.xArr )
+    /**
+     * 滤波会出现断层,所以最后会出现识别到的峰数量减少的情况
+     * 所以需要结合之前的原始数据来滤波
+     */
+    if(total_rawData.yArr.length > win){
+      let tmp_rawData_yArr = total_rawData.yArr.slice(-win).concat(rawData.yArr)
+      let filtered = filterFun(tmp_rawData_yArr, win)
+      filterData.yArr.push(  ...filtered.slice(win) )
+    }else{
+      let filtered = filterFun(rawData.yArr, win)
+      filterData.yArr.push(  ...filtered)
     }
+    total_rawData.xArr.push( ...rawData.xArr )
+    total_rawData.yArr.push( ...rawData.yArr )
+    this.push( JSON.stringify(filterData) )
+    rawData.xArr = []
+    rawData.yArr = []
+    filterData.xArr = []
+    filterData.yArr = []
     cb()
   }
 })
@@ -129,27 +120,27 @@ function peakIdent_middlewere(peakIdentFun, peakIdentWin){
       let {xArr, yArr} = JSON.parse( chunk.toString() )
       _xArr.push(...xArr)
       _yArr.push(...yArr)
-      console.log(
+      /*console.log(
         '峰识别：',
         {
         _yArrLength: _yArr.length,
         yArrLength: yArr.length
         })
-
+      */
       testLength+=yArr.length
 
       if(_yArr.length > peakIdentWin){
         let peakIdentRes = peakIdentFun(_xArr, _yArr,  peakIdentWin,isAuto,not_complete_peaks_points)
         let peaks_win = peakIdentRes.peaks
         not_complete_peaks_points= peakIdentRes.notComplete_peakPoints
-        console.log({not_complete_peaks_points})
+        //console.log({not_complete_peaks_points})
         peaks.push( ...peaks_win )
         _xArr=[]
         _yArr=[]
       }
       total_filterData.yArr.push( ...yArr)
       total_filterData.xArr.push( ...xArr)
-      console.log(testLength, total_filterData.yArr.length,total_rawData.yArr.length)
+      //console.log(testLength, total_filterData.yArr.length,total_rawData.yArr.length)
       cb()
     }
   })

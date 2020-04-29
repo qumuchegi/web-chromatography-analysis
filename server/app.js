@@ -66,4 +66,4 @@ app.get('/read-assets-file',(req,res,next)=>{
 
 
 const server = http.createServer(app)
-server.listen(3001,()=> console.log('服务启动...'))
+module.exports = server.listen(3001,()=> console.log('服务启动...'))

@@ -225,7 +225,7 @@ function peak_ident1(xArr, yArr,  win_peakIdent,isAuto=false,not_complete_peakPo
           // 峰里的梯形面积
                   // 峰里的梯形面积,经过修改改为矩形，取起点和终点中最小的为矩形的高，矩形宽为起点和终点时间差
           let areaPeakLadder = Math.min(endPoint_voltage, startPoint_voltage)*(endPoint_time-startPoint_time)
-          console.log('计算峰面积：',{areaTotal, areaPeakLadder})
+          //console.log('计算峰面积：',{areaTotal, areaPeakLadder})
           areaPeak = (areaTotal - areaPeakLadder).toFixed(3)
           featurePoints.push(
             new FeaturePointOfPeak({
@@ -257,14 +257,6 @@ function peak_ident1(xArr, yArr,  win_peakIdent,isAuto=false,not_complete_peakPo
           flag_peak=0
           areaTotal=0
         }
-         // 谷点，d_0<d_1<....<d_n-1
-         // s\上面这个条件也太不符合了吧
-        /*else if(isD_up){
-          valleyPoint_time=win_x[0]
-          valleyPoint_voltage=win_y[0]
-          flag_peak=1
-        }
-        */
       }
       // h_0>h_1....>h_n-1
       else if( isY_down ){
