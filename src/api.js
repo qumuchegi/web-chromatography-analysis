@@ -1,5 +1,5 @@
 import axios from 'axios'
-const serverUrl = 'http://localhost:3001'
+const serverUrl = 'http://118.178.139.24:80'
 
 export default{
   get: async function(path='/', reqData={}){
