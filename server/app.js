@@ -1,4 +1,5 @@
 const http = require('http')
+const https = require('https')
 const express = require('express')
 const app = express()
 const cors = require('cors')
@@ -12,10 +13,11 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: false }));
 app.use(express.static('server/asstes'))
 app.use(express.static('server/files'))
+app.use(express.static('server/dist/build'))
  
 // 跨域
 app.use(cors())
-
+// 提供web版首页
 app.use('/txtfile',require('./routes/txtfile'))
 app.use('/mannul-analyze',require('./routes/mannul-analyze'))
 app.use('/auto-analyze', require('./routes/auto-analyze'))
@@ -25,7 +27,6 @@ app.get('/prj-intro-dir', (req, res)=>{
   dirs.forEach(dir=>{
     arr.push({[dir]: fs.readdirSync('server/project-intro/'+dir)})
   })
-  console.log(arr)
   res.json({
     code:0,
     data: {
@@ -42,6 +43,7 @@ app.get('/prj-intro-file', (req, res, next)=>{
     }
   })
 })
+
 /**
  * 以下API专门针对移动端
  */
@@ -65,5 +67,14 @@ app.get('/read-assets-file',(req,res,next)=>{
 })
 
 
+
 const server = http.createServer(app)
-module.exports = server.listen(3001,()=> console.log('服务启动...'))
+
+const server_https = https.createServer({
+  key: fs.readFileSync('server/config/privatekey.pem'),
+  cert: fs.readFileSync('server/config/certificate.pem')
+})
+
+const host='0.0.0.0'
+server_https.listen(443, host, ()=> console.log('https 服务启动'))
+module.exports = server.listen(80, host, ()=> console.log('服务启动...'))
