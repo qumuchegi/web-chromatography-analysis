@@ -52,7 +52,6 @@ app.post('/pc-upload',upload('server/assets/').any(),(req,res,next)=>{
     data:{code:0}
   })
 })
-app.use('/server-render-chart', require('./routes/server-render-chart'))
 
 app.get('/read-assets-dir',(req,res,next)=>{
   res.json({code:0,data:{
@@ -66,8 +65,6 @@ app.get('/read-assets-file',(req,res,next)=>{
   }})
 })
 
-
-
 const server = http.createServer(app)
 
 const server_https = https.createServer({
@@ -77,4 +74,4 @@ const server_https = https.createServer({
 
 const host='0.0.0.0'
 server_https.listen(443, host, ()=> console.log('https 服务启动'))
-module.exports = server.listen(80, host, ()=> console.log('服务启动...'))
+module.exports = server.listen(80,host, ()=> console.log('服务启动...'))
